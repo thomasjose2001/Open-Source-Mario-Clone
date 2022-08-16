@@ -22,14 +22,50 @@ class MatrixMap {
 
 }
 
+/*
 class Mario {
 	let xPos = 20;
 	let yPos = 500;
 }
+*/
 
-class Background {
+canvas = document.getElementById("canvas");
+ctx = canvas.getContext("2d");
+
+class entityGraphic() {
+	constructor() {
+		// should be a generic position given by the user
+		let xPos = 20;
+		let yPos = 500;
+		const height = 50;
+		const width = 50;
+		let fallingVelocity = 2;
+		let runningVelocity = 0.2;
+		let acceleration = 0.2;
+		const gravity = 1.2;
+		//draw the object
+		ctx.fillRect( xPos, yPos, height, width );
+		ctx.fillStyle = "red";	
+	}
 
 }
+
+class Background {
+	constructor() {
+		this.canvas = canvas;
+		this.ctx = ctx;
+		this.image = document.getElementById('background');
+		this.drawBackground();
+	}
+
+	// Move as mario advances
+	drawBackground() {
+		this.ctx.drawImage(this.image, 7, 7, 10176, 672);
+	}
+
+}
+
+new Background();
 /*
 let xPos = 20;
 let yPos = 500;
