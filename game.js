@@ -1,35 +1,115 @@
 /* Mario Game Clone */
 /* Thomas C / Jonathan C */
 
+/* --------------------------------------------------------- */
+/* Function Oriented Programming */
+
+function gameRun(mapMatrixObject, marioObject) {
+
+	requestAnimationFrame(gameRun);						// Update the game very fast by calling the gameRun function over and over again
+} 
+
+function main() {
+
+
+	let mapMatrix = new MatrixMap(50, 150);					// Map Object
+	let mario = new Mario(4, 0);							// Character Object
+
+	document.addEventListener('keydown', (event) => {		// function calls!!!!!!!!!!!
+
+		if (event.key == "w")
+			mapMatrix.updateMatrixUp(mario);
+		else if (event.key == "a") 
+			mapMatrix.updateMatrixLeft(mario);
+		else if (event.key == "d") 
+			mapMatrix.updateMatrixRight(mario);
+	});
+
+	document.addEventListener('keyup', (event) => {		// we need the keyup to map the falling
+
+		if (event.key == "w")
+			mapMatrix.updateMatrixUp(mario);
+		else if (event.key == "a") 
+			mapMatrix.updateMatrixLeft(mario);
+		else if (event.key == "d") 
+			mapMatrix.updateMatrixRight(mario);
+	});
+	
+	//gameRun(mapMatrix, mario);
+}
+
+/* --------------------------------------------------------- */
+/* Object Oriented Programming */
+
 class MatrixMap {
 
-	constructor( mapX, mapY ) {     
-	  this.mapX = mapX;
-	  this.mapY = mapY;
+  constructor(mapX, mapY) {   			 	// Size of the map ( x and y )
+	
+	this.mapX = mapX;
+	this.mapY = mapY;
+	this.map = createMap();
   }
-  
-  createMap( ) {
-	const matrixMap = [];
-	const C = 3, R = 4;
-	const val = 1;
+
+  getMatrixMap() {return this.map;}			// Accessor Method to return matrix ( pass a handle to the Mario Class )
+    
+  createMap() {								// Private Method used to create the matrix
+	
+	const C = 3; 
+	const R = 4;
+	const val = 0;
+	
 	var arr = Array(C);
 
 	for (var i = 0; i < C; i++)
 		arr[i] = Array(R).fill(val);
 
-	console.log(arr);
+	return arr;
   }
 
+  updateMatrixUp(objectMove) {			// Dont make the change super fast ( it has to sleep ) has to coincide with the anuimation
+	// For loop the amount of columns and erase the last or bottom row
+	// for loop the amount of columns and add at row 0 + 1 more in the y direction
+	// Sleep
+	// Another row etc...
+  }
+
+  updateMatrixLeft(objectMove) {
+
+	mapMatrix[objectMove.getxPos][objectMove.getyPos] = 0;
+	mapMatrix[objectMove.getxPos][objectMove.getyPos + objectMove.getWidth] = 0;
+	mapMatrix[objectMove.getxPos - objectMove.getWidth][objectMove.getyPos] = objectMove.getMatrixValue;
+	mapMatrix[objectMove.getxPos - objectMove.getWidth][objectMove.getyPos - objectMove.getWidth] = objectMove.getMatrixValue;
+  }
+
+  updateMatrixRight(objectMove) {
+
+	mapMatrix[objectMove.getxPos][objectMove.getyPos] = 0;
+	mapMatrix[objectMove.getxPos][ objectMove.getyPos + objectMove.getWidth] = 0;
+	mapMatrix[objectMove.getxPos + objectMove.getWidth][objectMove.getyPos] = objectMove.getMatrixValue;
+	mapMatrix[objectMove.getxPos + objectMove.getWidth][objectMove.getyPos + objectMove.getHeight] = objectMove.getMatrixValue;
+  }	
 }
 
 class Mario {
-	let xPos = 20;
-	let yPos = 500;
-}
 
-class Background {
+	constructor() {
+				
+		this.width = 2;									// Size in blocks ( not pixels )
+		this.height = 4;
 
+		this.xPos = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
+		this.yPos = this.height;
+	}
+
+	getxPos() {return this.xPos;}
+	getyPos() {return this.yPos;}
+
+	getWidth() {return this.width;}
+	getHeight() {return this.height;}
+
+	getMatrixValue() {return 1;}
 }
+ 
 /*
 let xPos = 20;
 let yPos = 500;
