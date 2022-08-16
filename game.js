@@ -1,5 +1,36 @@
-/* Thomas Cinalli */
+/* Mario Game Clone */
+/* Thomas C / Jonathan C */
 
+class MatrixMap {
+
+	constructor( mapX, mapY ) {     
+	  this.mapX = mapX;
+	  this.mapY = mapY;
+  }
+  
+  createMap( ) {
+	const matrixMap = [];
+	const C = 3, R = 4;
+	const val = 1;
+	var arr = Array(C);
+
+	for (var i = 0; i < C; i++)
+		arr[i] = Array(R).fill(val);
+
+	console.log(arr);
+  }
+
+}
+
+class Mario {
+	let xPos = 20;
+	let yPos = 500;
+}
+
+class Background {
+
+}
+/*
 let xPos = 20;
 let yPos = 500;
 
@@ -10,9 +41,6 @@ let acceleration = 0.2;
 const gravity = 1.2;
 
 let platformX = 200;
-
-/* Start of Game ( place character and canvas on screen ) */
-/* --------------------------------------------------------- */
 
 let canvas = document.getElementById( "wallpaper" );			
 let context = canvas.getContext( "2d" );
@@ -26,13 +54,7 @@ const characterWidth = 50;
 const keys = { right: { pressed: false },
 	        left: { pressed: false } 
 	     }
-	     	       		
-/* --------------------------------------------------------- */
 
-/* Control Movement of Character */
-/* --------------------------------------------------------- */
-
-/* Falling Function */
 function gameRun( ) {
 	
 	requestAnimationFrame( gameRun );
@@ -69,9 +91,6 @@ function gameRun( ) {
 	platform( platformDirection, 200, 300, 50, platformMove );		// Put withing the two if statements
 }
 
-/* Right, left, up ( Action Listener ) */
-/* --------------------------------------------------------- */
-
 document.addEventListener( 'keydown', ( event ) => {
 	
 	const jumptAmount = 20;
@@ -87,9 +106,6 @@ document.addEventListener( 'keydown', ( event ) => {
 		keys.right.pressed = true;			
 } );
 
-/* KeyUp, stop when we have released the key */
-/* --------------------------------------------------------- */
-
 document.addEventListener( 'keyup', ( event ) => {
 		
 	let name = event.key;	
@@ -100,9 +116,6 @@ document.addEventListener( 'keyup', ( event ) => {
 	
 	runningVelocity = 0;
 } );
-
-/* Function for creating barriers */
-/* --------------------------------------------------------- */
 
 function platform( characterDirection, y, w, z, move ) {
 
@@ -120,7 +133,6 @@ function platform( characterDirection, y, w, z, move ) {
 	context.fillRect( platformX, y, w, z );	
 }
 
-/* Main */
-/* --------------------------------------------------------- */
+gameRun( );
 
-gameRun( );s
+*/
