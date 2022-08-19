@@ -7,19 +7,17 @@ function main() {
 	let canvas = document.getElementById("canvas");			// Reference to the canvas in the page
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
 	let mapMatrix = new MatrixMap(50, 150);					// Map Object
-	let mario = new Mario(context);							// Mario Object
-	let background = new Background(canvas, context, mario);// Moving Background object
+	let mario = new Mario(context, canvas.width);							// Mario Object
+	let background = new Background(context, mario);// Moving Background object
 	const gravity = 1.2;
-	const jumptAmount = 20;
-	//Game Loop
+	//---- Game Loop ----
 	let gameRun = function () {
-
-		// Update the game very fast by calling the gameRun function over and over again
 		context.clearRect( 0, 0, background.getWidth(), background.getHeight() );
 		background.draw();
 		mario.draw();
-		console.log(mario.getyPos());
-		console.log(mario.getxPos());
+		//console.log("X coord: "+ mario.getyPos());
+		//console.log("Y coord: " + mario.getxPos());
+		//console.log("Falling Velocity: " + mario.getFallingVel());
 		
 		// falling condition
 		if ( mario.getyPos() + mario.getFallingVel() + mario.getHeight() <= background.getHeight() ){
@@ -28,34 +26,29 @@ function main() {
 		else 
 			mario.setFallingVel(0);
 		
-		if ( mario.getRunningVel >= 2 )
-			mario.setRunningVel(2);
+		if ( mario.getRunningVel >= 4 )
+			mario.setRunningVel(4);
 		console.log("looping the game");
 		
+		// Update the game very fast by calling the gameRun function over and over again
 		requestAnimationFrame(gameRun);	
 	} 
 
 	// ---- Add all event listeners before running the game loop ---- //
 	document.addEventListener('keydown', (event) => {
 		if (event.key == "w"){
-		    mario.setFallingVel( mario.getFallingVel() - jumptAmount);
+			if ( mario.movements["up"] == null)
+				mario.movingUp();
 			//mapMatrix.updateMatrixUp(mario);
 		}
-		else if (event.key == "a"){
-			// check left bound of the screen (could be a function later)
-			if ( mario.getxPos() - mario.getWidth() >= 0 ) {
-				console.log("runningVel + Acceleration:" + (mario.getRunningVel() + mario.getAcceleration()));
-				mario.setxPos( mario.getxPos() - mario.setRunningVel( mario.getRunningVel() + mario.getAcceleration() ) ); // problem here!! returnin NAN
-				//platformDirection = "negative"; keep track of running direction!!
-			}
+		if (event.key == "a"){
+			if (mario.movements["left"] == null)
+				mario.movingLeft();
 			//mapMatrix.updateMatrixLeft(mario);
 		}
-		else if (event.key == "d"){
-			// check right bound of the screen
-			if ( mario.getxPos() + mario.getWidth() + mario.getAcceleration() <= canvas.width ) {
-				mario.setxPos( mario.getxPos() + mario.setRunningVel( mario.getRunningVel() + mario.getAcceleration() ) );
-				//platformDirection = "positive"; here too !!
-			}
+		if (event.key == "d"){
+			if (mario.movements["right"] == null)
+				mario.movingRight();
 			//mapMatrix.updateMatrixRight(mario);
 		}
 	});
@@ -63,13 +56,18 @@ function main() {
 	document.addEventListener('keyup', (event) => {
 
 		if (event.key == "w"){
-			mario.setFallingVel( mario.getFallingVel() + jumptAmount);
-			mapMatrix.updateMatrixUp(mario);
+			//mario.setFallingVel( mario.getFallingVel() + jumptAmount);
+			mario.stoppingUp();
+			//mapMatrix.updateMatrixUp(mario);
 		}	
-		else if (event.key == "a") 
-			mapMatrix.updateMatrixLeft(mario);
-		else if (event.key == "d") 
-			mapMatrix.updateMatrixRight(mario);
+		if (event.key == "a"){
+			mario.stoppingLeft();
+			//mapMatrix.updateMatrixLeft(mario);
+		}
+		if (event.key == "d") {
+			mario.stoppingRight();
+			//mapMatrix.updateMatrixRight(mario);
+		}
 		
 		mario.setRunningVel(0);
 	});
@@ -136,15 +134,21 @@ class MatrixMap {
 }
 
 class Mario {
-	constructor(context) {
+	constructor(context, canvasWidth) {
 		this.context = context;		
+		this.canvasWidth = canvasWidth;
 		this.width = 50;									// Size in blocks ( not pixels )
 		this.height = 50;
 		this.xPos = 100;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
 		this.yPos = 100;
 		this.fallingVelocity = 2;
-		this.runningVelocity = 0.2;
-		this.acceleration = 0.2;
+		this.runningVelocity = 2;
+		this.acceleration = 0.5;
+		this.jumptAmount = 20;
+		this.movements = {up: null,
+						  right: null,
+						  up: null
+					     };
 	}
 
 	getxPos() {return this.xPos;}
@@ -172,6 +176,50 @@ class Mario {
 		this.runningVelocity = num;
 		return this.runningVelocity;
 	}
+	// update position while user press certain keys
+	movingUp() {
+		this.movements["up"] = setInterval( () => this.up(), 100);
+	}
+	stoppingUp() {
+		clearInterval(this.movements["up"]);
+		this.movements["up"] = null;
+	}
+	up() {
+		console.log("up");
+		this.fallingVelocity -= this.jumptAmount;
+	}
+
+	movingLeft() {
+		this.movements["left"] = setInterval( () => this.left(), 100);
+	}
+	stoppingLeft() {
+		clearInterval(this.movements["left"]);
+		this.movements["left"] = null;
+	}
+	left() {
+		console.log("left")
+		// check left bound of the screen (could be a function later)
+		if ( this.xPos - this.width >= 0 ) {
+			this.xPos -= this.runningVelocity += this.acceleration ;
+			//platformDirection = "negative"; keep track of running direction!! for later
+		}
+	}
+
+	movingRight() {
+		this.movements["right"] = setInterval( () => this.right(), 100);
+	}
+	stoppingRight() {
+		clearInterval(this.movements["right"]);
+		this.movements["right"] = null;
+	}
+	right() {
+		console.log("right");
+		// check right bound of the screen
+		if ( this.xPos + this.width + this.acceleration <= this.canvasWidth ) {
+			this.xPos += this.runningVelocity += this.acceleration ;
+			//platformDirection = "positive"; here too !!
+		}
+	}
 
 	// Draws Mario in its current position on the screen
 	draw() {
@@ -182,9 +230,8 @@ class Mario {
 }
 
 class Background {
-	constructor(canvas, context, mario) {
-		this.canvas = canvas;
-		this.ctx = context;
+	constructor(context, mario) {
+		this.context = context;
 		this.mario = mario;
 		this.height = 672;
 		this.width = 10176;
@@ -196,7 +243,7 @@ class Background {
 
 	// Code the background Movement as mario advances !!
 	draw() { 
-		this.ctx.drawImage(this.image, 7, 7, this.width, this.height); 
+		this.context.drawImage(this.image, 7, 7, this.width, this.height); 
 		return 1;
 	}
 }
