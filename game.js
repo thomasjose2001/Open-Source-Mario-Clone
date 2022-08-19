@@ -44,6 +44,7 @@ function main() {
 		else if (event.key == "a"){
 			// check left bound of the screen (could be a function later)
 			if ( mario.getxPos() - mario.getWidth() >= 0 ) {
+				console.log("runningVel + Acceleration:" + (mario.getRunningVel() + mario.getAcceleration()));
 				mario.setxPos( mario.getxPos() - mario.setRunningVel( mario.getRunningVel() + mario.getAcceleration() ) ); // problem here!! returnin NAN
 				//platformDirection = "negative"; keep track of running direction!!
 			}
@@ -51,7 +52,7 @@ function main() {
 		}
 		else if (event.key == "d"){
 			// check right bound of the screen
-			if ( mario.getxPos() + mario.getWidth() + mario.getAcceleration() <= background.getWidth() ) {
+			if ( mario.getxPos() + mario.getWidth() + mario.getAcceleration() <= canvas.width ) {
 				mario.setxPos( mario.getxPos() + mario.setRunningVel( mario.getRunningVel() + mario.getAcceleration() ) );
 				//platformDirection = "positive"; here too !!
 			}
@@ -141,9 +142,9 @@ class Mario {
 		this.height = 50;
 		this.xPos = 100;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
 		this.yPos = 100;
-		let fallingVelocity = 2;
-		let runningVelocity = 0.2;
-		let acceleration = 0.2;
+		this.fallingVelocity = 2;
+		this.runningVelocity = 0.2;
+		this.acceleration = 0.2;
 	}
 
 	getxPos() {return this.xPos;}
