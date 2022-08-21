@@ -6,21 +6,27 @@
 function main() {
 	let canvas = document.getElementById("canvas");			// Reference to the canvas in the page
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
-	let mapMatrix = new MatrixMap(50, 150);					// Map Object
-	let mario = new Mario(context, canvas.width);							// Mario Object
-	let background = new Background(context, mario);// Moving Background object
+	let spriteSheet = document.getElementById("sprites");   // Image that contains all the sprites in the game
+	// We could add all the blocks here as a dictionary with the
+	// coordinates in the spreadsheet
+	// maybe go through a textfile and build the dictionary
+	const tileMap = { "BrickBlockBrown":{"x":0,"y":0,"h":16,"w":16},
+					  "Empty":{"x":16,"y":0,"h":16,"w":16}
+					};
+	let mapMatrix = new MatrixMap(50, 150);					// Map Object: should be 16 * 15 blocks like in the original mario game!! 
+	let mario = new Mario(context, canvas.width);							// Mario Object: should be updated with the sprite and watching the video
 	const gravity = 1.2;
+	window.onload = render; // runs render once to display the background
 	//---- Game Loop ----
 	let gameRun = function () {
-		context.clearRect( 0, 0, background.getWidth(), background.getHeight() );
-		background.draw();
+		//context.clearRect( 0, 0, canvas.width, canvas.height );
 		mario.draw();
 		//console.log("X coord: "+ mario.getyPos());
 		//console.log("Y coord: " + mario.getxPos());
 		//console.log("Falling Velocity: " + mario.getFallingVel());
 		
 		// falling condition
-		if ( mario.getyPos() + mario.getFallingVel() + mario.getHeight() <= background.getHeight() ){
+		if ( mario.getyPos() + mario.getFallingVel() + mario.getHeight() <= canvas.height ){
 			mario.setyPos( mario.getyPos() + mario.setFallingVel( mario.getFallingVel() + gravity ) );
 		}	
 		else 
@@ -71,11 +77,38 @@ function main() {
 		
 		mario.setRunningVel(0);
 	});
+
+	function render() {
+		// Paint the background in blue
+		context.fillStyle = "rgb(4, 156, 216)";
+		context.fillRect(0, 0, canvas.width - 1, canvas.height - 1);
+	
+		// fill in all sky with empty blocks and floor with Brick Blocks
+		// remember: game dimensions in blocks 16 * 15
+		let xblocks = 16;
+		let yblocks = 15;
+		// dimensions in pixels per block
+		let xdim = canvas.width / xblocks;
+		let ydim = canvas.height / yblocks;
+		for (let i = 0; i < yblocks; i++){
+			if ( i < (yblocks - 2) ){
+				for (let j = 0; j < xblocks; j++){
+					context.drawImage(spriteSheet, tileMap.Empty.x, tileMap.Empty.y, tileMap.Empty.w, tileMap.Empty.h, j * xdim, i * ydim, xdim, ydim)
+				}
+			} 
+			else{
+				for (let j = 0; j < xblocks; j++){
+					context.drawImage(spriteSheet, tileMap.BrickBlockBrown.x, tileMap.BrickBlockBrown.y, tileMap.BrickBlockBrown.w, tileMap.BrickBlockBrown.h, j * xdim, i * ydim, xdim, ydim)
+				}
+			}
+		}
+		
+	}
 	
 	// Should we list all parameters in here?
 	// we could pass all objects to update into an abstract object list and hand them to gameRun!!!
-	//mario.draw();
-	requestAnimationFrame( gameRun );
+	// RUN THIS when rendering is integrated with the canvas and mario
+	//requestAnimationFrame( gameRun );
 }
 
 /* --------------------------------------------------------- */
@@ -225,25 +258,6 @@ class Mario {
 	draw() {
 		this.context.fillRect( this.xPos, this.yPos, this.height, this.width );
 		this.context.fillStyle = "red";	
-		return 1;
-	}
-}
-
-class Background {
-	constructor(context, mario) {
-		this.context = context;
-		this.mario = mario;
-		this.height = 672;
-		this.width = 10176;
-		this.image = document.getElementById('background');
-	}
-
-	getHeight() { return this.height; }
-	getWidth() { return this.width; }
-
-	// Code the background Movement as mario advances !!
-	draw() { 
-		this.context.drawImage(this.image, 7, 7, this.width, this.height); 
 		return 1;
 	}
 }
