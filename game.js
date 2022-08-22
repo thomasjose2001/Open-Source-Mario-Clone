@@ -16,16 +16,16 @@ function main() {
 	let mapMatrix = new MatrixMap(50, 150);					// Map Object: should be 16 * 15 blocks like in the original mario game!! 
 	let mario = new Mario(context, canvas.width);							// Mario Object: should be updated with the sprite and watching the video
 	const gravity = 1.2;
-	window.onload = render; // runs render once to display the background
 	//---- Game Loop ----
 	let gameRun = function () {
-		//context.clearRect( 0, 0, canvas.width, canvas.height );
-		mario.draw();
+		context.clearRect( mario.getxPos(), 0, canvas.width, canvas.height );
+		//mario.draw();
 		//console.log("X coord: "+ mario.getyPos());
 		//console.log("Y coord: " + mario.getxPos());
 		//console.log("Falling Velocity: " + mario.getFallingVel());
 		
 		// falling condition
+		/*
 		if ( mario.getyPos() + mario.getFallingVel() + mario.getHeight() <= canvas.height ){
 			mario.setyPos( mario.getyPos() + mario.setFallingVel( mario.getFallingVel() + gravity ) );
 		}	
@@ -35,12 +35,15 @@ function main() {
 		if ( mario.getRunningVel >= 4 )
 			mario.setRunningVel(4);
 		console.log("looping the game");
+		*/
 		
 		// Update the game very fast by calling the gameRun function over and over again
+		console.log("rendering...");
+		render();
 		requestAnimationFrame(gameRun);	
 	} 
 
-	// ---- Add all event listeners before running the game loop ---- //
+	// ---- Event Listeners ---- //
 	document.addEventListener('keydown', (event) => {
 		if (event.key == "w"){
 			if ( mario.movements["up"] == null)
@@ -108,7 +111,7 @@ function main() {
 	// Should we list all parameters in here?
 	// we could pass all objects to update into an abstract object list and hand them to gameRun!!!
 	// RUN THIS when rendering is integrated with the canvas and mario
-	//requestAnimationFrame( gameRun );
+	window.onload = gameRun();
 }
 
 /* --------------------------------------------------------- */
@@ -172,8 +175,8 @@ class Mario {
 		this.canvasWidth = canvasWidth;
 		this.width = 50;									// Size in blocks ( not pixels )
 		this.height = 50;
-		this.xPos = 100;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
-		this.yPos = 100;
+		this.xPos = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
+		this.yPos = 0;
 		this.fallingVelocity = 2;
 		this.runningVelocity = 2;
 		this.acceleration = 0.5;
@@ -239,12 +242,18 @@ class Mario {
 	}
 
 	movingRight() {
+		//this.movements["right"] = setInterval( () => this.right(), 100);
 		this.movements["right"] = setInterval( () => this.right(), 100);
 	}
 	stoppingRight() {
 		clearInterval(this.movements["right"]);
 		this.movements["right"] = null;
 	}
+	right() {
+		this.context.translate(-10,0);
+		this.xPos -= 10;
+	}
+	/*
 	right() {
 		console.log("right");
 		// check right bound of the screen
@@ -253,6 +262,7 @@ class Mario {
 			//platformDirection = "positive"; here too !!
 		}
 	}
+	*/
 
 	// Draws Mario in its current position on the screen
 	draw() {
