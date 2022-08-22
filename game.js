@@ -4,7 +4,8 @@
 /* --------------------------------------------------------- */
 /* Function Oriented Programming */
 function main() {
-	let canvas = document.getElementById("canvas");			// Reference to the canvas in the page
+	let camera = new Camera();  							// the active camera (what is displayed for the user to see)
+	let canvas = document.getElementById("canvas");			// the whole map of the game
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
 	let spriteSheet = document.getElementById("sprites");   // Image that contains all the sprites in the game
 	// We could add all the blocks here as a dictionary with the
@@ -14,11 +15,13 @@ function main() {
 					  "Empty":{"x":16,"y":0,"h":16,"w":16}
 					};
 	let mapMatrix = new MatrixMap(50, 150);					// Map Object: should be 16 * 15 blocks like in the original mario game!! 
-	let mario = new Mario(context, canvas.width);							// Mario Object: should be updated with the sprite and watching the video
+	let mario = new Mario(context, canvas.width, camera);							// Mario Object: should be updated with the sprite and watching the video
 	const gravity = 1.2;
+	window.onload = render; // render the whole level on the canvas
+
 	//---- Game Loop ----
 	let gameRun = function () {
-		context.clearRect( mario.getxPos(), 0, canvas.width, canvas.height );
+		mario.movement();
 		//mario.draw();
 		//console.log("X coord: "+ mario.getyPos());
 		//console.log("Y coord: " + mario.getxPos());
@@ -38,27 +41,19 @@ function main() {
 		*/
 		
 		// Update the game very fast by calling the gameRun function over and over again
-		console.log("rendering...");
-		render();
 		requestAnimationFrame(gameRun);	
 	} 
 
 	// ---- Event Listeners ---- //
 	document.addEventListener('keydown', (event) => {
 		if (event.key == "w"){
-			if ( mario.movements["up"] == null)
-				mario.movingUp();
-			//mapMatrix.updateMatrixUp(mario);
+			mario.moveUp();
 		}
 		if (event.key == "a"){
-			if (mario.movements["left"] == null)
-				mario.movingLeft();
-			//mapMatrix.updateMatrixLeft(mario);
+			mario.moveLeft();
 		}
 		if (event.key == "d"){
-			if (mario.movements["right"] == null)
-				mario.movingRight();
-			//mapMatrix.updateMatrixRight(mario);
+			mario.moveRight();
 		}
 	});
 
@@ -66,15 +61,15 @@ function main() {
 
 		if (event.key == "w"){
 			//mario.setFallingVel( mario.getFallingVel() + jumptAmount);
-			mario.stoppingUp();
+			mario.stopUp();
 			//mapMatrix.updateMatrixUp(mario);
 		}	
 		if (event.key == "a"){
-			mario.stoppingLeft();
+			mario.stopLeft();
 			//mapMatrix.updateMatrixLeft(mario);
 		}
 		if (event.key == "d") {
-			mario.stoppingRight();
+			mario.stopRight();
 			//mapMatrix.updateMatrixRight(mario);
 		}
 		
@@ -91,8 +86,8 @@ function main() {
 		let xblocks = 16;
 		let yblocks = 15;
 		// dimensions in pixels per block
-		let xdim = canvas.width / xblocks;
-		let ydim = canvas.height / yblocks;
+		let xdim = 256 / xblocks;
+		let ydim = 240 / yblocks;
 		for (let i = 0; i < yblocks; i++){
 			if ( i < (yblocks - 2) ){
 				for (let j = 0; j < xblocks; j++){
@@ -111,11 +106,22 @@ function main() {
 	// Should we list all parameters in here?
 	// we could pass all objects to update into an abstract object list and hand them to gameRun!!!
 	// RUN THIS when rendering is integrated with the canvas and mario
-	window.onload = gameRun();
+	gameRun();
 }
+
+
+
 
 /* --------------------------------------------------------- */
 /* Object Oriented Programming */
+
+class Camera {
+	constructor(){
+		this.cam = document.getElementById("cam");
+	}
+	// negative: move left, positive: move right
+	scroll(num) { this.cam.scrollLeft += num; }
+}
 
 class MatrixMap {
 
@@ -170,9 +176,10 @@ class MatrixMap {
 }
 
 class Mario {
-	constructor(context, canvasWidth) {
+	constructor(context, canvasWidth, camera) {
 		this.context = context;		
 		this.canvasWidth = canvasWidth;
+		this.camera = camera;
 		this.width = 50;									// Size in blocks ( not pixels )
 		this.height = 50;
 		this.xPos = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
@@ -181,12 +188,13 @@ class Mario {
 		this.runningVelocity = 2;
 		this.acceleration = 0.5;
 		this.jumptAmount = 20;
-		this.movements = {up: null,
-						  right: null,
-						  up: null
+		this.keys = { up: false,
+					  right: false,
+					  left: false
 					     };
 	}
 
+	/* Accesors */
 	getxPos() {return this.xPos;}
 	getyPos() {return this.yPos;}
 	getWidth() {return this.width;}
@@ -196,6 +204,7 @@ class Mario {
 	getFallingVel() {return this.fallingVelocity;}
 	getAcceleration() {return this.acceleration;}
 
+	/* Mutators */
 	setxPos( num ) {
 		this.xPos = num;
 		return this.xPos;
@@ -212,25 +221,18 @@ class Mario {
 		this.runningVelocity = num;
 		return this.runningVelocity;
 	}
-	// update position while user press certain keys
-	movingUp() {
-		this.movements["up"] = setInterval( () => this.up(), 100);
-	}
-	stoppingUp() {
-		clearInterval(this.movements["up"]);
-		this.movements["up"] = null;
-	}
-	up() {
+	// update movement states
+	moveUp() { this.keys["up"] = true; }
+	stopUp() { this.keys["down"] = false; }
+	moveLeft() { this.keys["left"] = true; }
+	stopLeft() { this.keys["left"] = false;}
+	moveRight() { this.keys["right"] = true;}
+	stopRight() { this.keys["right"] = false;}
+
+	// Actual jumping and lateral movement operations
+	jump () {
 		console.log("up");
 		this.fallingVelocity -= this.jumptAmount;
-	}
-
-	movingLeft() {
-		this.movements["left"] = setInterval( () => this.left(), 100);
-	}
-	stoppingLeft() {
-		clearInterval(this.movements["left"]);
-		this.movements["left"] = null;
 	}
 	left() {
 		console.log("left")
@@ -240,20 +242,6 @@ class Mario {
 			//platformDirection = "negative"; keep track of running direction!! for later
 		}
 	}
-
-	movingRight() {
-		//this.movements["right"] = setInterval( () => this.right(), 100);
-		this.movements["right"] = setInterval( () => this.right(), 100);
-	}
-	stoppingRight() {
-		clearInterval(this.movements["right"]);
-		this.movements["right"] = null;
-	}
-	right() {
-		this.context.translate(-10,0);
-		this.xPos -= 10;
-	}
-	/*
 	right() {
 		console.log("right");
 		// check right bound of the screen
@@ -262,7 +250,19 @@ class Mario {
 			//platformDirection = "positive"; here too !!
 		}
 	}
-	*/
+
+	movement() {
+		if (this.keys["up"] == true)
+			this.jump();
+		if (this.keys["left"] == true){
+			this.left();
+			this.camera.scroll(-1);
+		}	
+		if (this.keys["right"] == true){
+			this.right();
+			this.camera.scroll(1);
+		}	
+	}
 
 	// Draws Mario in its current position on the screen
 	draw() {
