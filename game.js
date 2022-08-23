@@ -12,13 +12,18 @@ function main() {
 	// coordinates in the spreadsheet
 	// maybe go through a textfile and build the dictionary
 	const tileMap = { "BrickBlockBrown":{"x":0,"y":0,"h":16,"w":16},
-					  "Empty":{"x":16,"y":0,"h":16,"w":16}
+		                   "Empty":{"x":16,"y":0,"h":16,"w":16}
+		          	//"Mario":{"x":, "y":, "h":, "w": }
 					};
 	let mapMatrix = new MatrixMap(50, 150);					// Map Object: should be 16 * 15 blocks like in the original mario game!! 
-	let mario = new Mario(context, canvas.width, camera);							// Mario Object: should be updated with the sprite and watching the video
+	let mario = new Mario(context, canvas.width, camera);
+	const divWidth = 256;
+	const divHeight = 240;
+	const blockHeight = 16;							// Mario Object: should be updated with the sprite and watching the video
 	const gravity = 1.2;
-	window.onload = render; // render the whole level on the canvas
-
+	render(); // render the whole level on the canvas
+	mario.draw();
+	
 	//---- Game Loop ----
 	let gameRun = function () {
 		mario.movement();
@@ -28,8 +33,8 @@ function main() {
 		//console.log("Falling Velocity: " + mario.getFallingVel());
 		
 		// falling condition
-		/*
-		if ( mario.getyPos() + mario.getFallingVel() + mario.getHeight() <= canvas.height ){
+		
+		/*if ( mario.getyPos() + mario.getFallingVel() + mario.getHeight() <= canvas.height ){
 			mario.setyPos( mario.getyPos() + mario.setFallingVel( mario.getFallingVel() + gravity ) );
 		}	
 		else 
@@ -37,8 +42,8 @@ function main() {
 		
 		if ( mario.getRunningVel >= 4 )
 			mario.setRunningVel(4);
-		console.log("looping the game");
-		*/
+		console.log("looping the game"); */
+		
 		
 		// Update the game very fast by calling the gameRun function over and over again
 		requestAnimationFrame(gameRun);	
@@ -78,20 +83,20 @@ function main() {
 
 	function render() {
 		// Paint the background in blue
-		context.fillStyle = "rgb(4, 156, 216)";
-		context.fillRect(0, 0, canvas.width - 1, canvas.height - 1);
+		//context.fillStyle = "rgb(4, 156, 216)";
+		//context.fillRect(0, 0, canvas.width - 1, canvas.height - 1);
 	
 		// fill in all sky with empty blocks and floor with Brick Blocks
 		// remember: game dimensions in blocks 16 * 15
 		let xblocks = 16;
 		let yblocks = 15;
 		// dimensions in pixels per block
-		let xdim = 256 / xblocks;
-		let ydim = 240 / yblocks;
+		let xdim = divWidth / xblocks;
+		let ydim = divHeight / yblocks;
 		for (let i = 0; i < yblocks; i++){
 			if ( i < (yblocks - 2) ){
 				for (let j = 0; j < xblocks; j++){
-					context.drawImage(spriteSheet, tileMap.Empty.x, tileMap.Empty.y, tileMap.Empty.w, tileMap.Empty.h, j * xdim, i * ydim, xdim, ydim)
+					context.drawImage(spriteSheet, tileMap.Empty.x, tileMap.Empty.y, tileMap.Empty.w, tileMap.Empty.h, j * xdim, i * ydim, xdim, ydim);
 				}
 			} 
 			else{
@@ -100,6 +105,7 @@ function main() {
 				}
 			}
 		}
+		mapMatrix.createMap();
 		
 	}
 	
@@ -125,8 +131,7 @@ class Camera {
 
 class MatrixMap {
 
-  constructor(mapX, mapY) {   			 	// Size of the map ( x and y )
-	
+  constructor(mapX, mapY) {   			 	// Size of the map ( x and y )	 
 	this.mapX = mapX;
 	this.mapY = mapY;
 	this.map = this.createMap();
@@ -136,8 +141,8 @@ class MatrixMap {
     
   createMap() {								// Private Method used to create the matrix
 	
-	const C = 3; 
-	const R = 4;
+	const C = 16; 
+	const R = 15;
 	const val = 0;
 	
 	var arr = Array(C);
@@ -180,18 +185,18 @@ class Mario {
 		this.context = context;		
 		this.canvasWidth = canvasWidth;
 		this.camera = camera;
-		this.width = 50;									// Size in blocks ( not pixels )
-		this.height = 50;
+		this.width = 26;									// Size in blocks ( not pixels )
+		this.height = 32;
 		this.xPos = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
-		this.yPos = 0;
+		this.yPos = 240 - (16 * 4 );
 		this.fallingVelocity = 2;
 		this.runningVelocity = 2;
 		this.acceleration = 0.5;
-		this.jumptAmount = 20;
+		this.jumptAmount = 5;
 		this.keys = { up: false,
-					  right: false,
-					  left: false
-					     };
+			      right: false,
+			      left: false
+			    };
 	}
 
 	/* Accesors */
@@ -203,7 +208,7 @@ class Mario {
 	getRunningVel() {return this.runningVelocity;}
 	getFallingVel() {return this.fallingVelocity;}
 	getAcceleration() {return this.acceleration;}
-
+	
 	/* Mutators */
 	setxPos( num ) {
 		this.xPos = num;
@@ -223,22 +228,22 @@ class Mario {
 	}
 	// update movement states
 	moveUp() { this.keys["up"] = true; }
-	stopUp() { this.keys["down"] = false; }
+	stopUp() { this.keys["up"] = false; }
 	moveLeft() { this.keys["left"] = true; }
 	stopLeft() { this.keys["left"] = false;}
 	moveRight() { this.keys["right"] = true;}
 	stopRight() { this.keys["right"] = false;}
 
 	// Actual jumping and lateral movement operations
-	jump () {
+	jump() {
 		console.log("up");
-		this.fallingVelocity -= this.jumptAmount;
+		this.yPos += this.fallingVelocity -= this.jumptAmount;
 	}
 	left() {
 		console.log("left")
 		// check left bound of the screen (could be a function later)
 		if ( this.xPos - this.width >= 0 ) {
-			this.xPos -= this.runningVelocity += this.acceleration ;
+			this.xPos -= this.runningVelocity += this.acceleration;
 			//platformDirection = "negative"; keep track of running direction!! for later
 		}
 	}
@@ -246,30 +251,35 @@ class Mario {
 		console.log("right");
 		// check right bound of the screen
 		if ( this.xPos + this.width + this.acceleration <= this.canvasWidth ) {
-			this.xPos += this.runningVelocity += this.acceleration ;
+			this.xPos += this.runningVelocity += this.acceleration;
 			//platformDirection = "positive"; here too !!
 		}
 	}
 
 	movement() {
-		if (this.keys["up"] == true)
+		if (this.keys["up"] == true){
 			this.jump();
+			this.draw();	
+		}
 		if (this.keys["left"] == true){
 			this.left();
 			this.camera.scroll(-1);
+			this.draw();
 		}	
 		if (this.keys["right"] == true){
 			this.right();
 			this.camera.scroll(1);
+			this.right();
+			this.draw();
 		}	
 	}
-
-	// Draws Mario in its current position on the screen
+	
+	//Draws Mario in its current position on the screen
 	draw() {
-		this.context.fillRect( this.xPos, this.yPos, this.height, this.width );
-		this.context.fillStyle = "red";	
-		return 1;
-	}
+		this.context.clearRect( 0, 0, canvas.width, canvas.height - 32 );
+		this.context.fillRect( this.xPos, this.yPos, this.width, this.height );
+		//this.context.stroke();
+	}	
 }
 
-main();
+window.onload = main;
