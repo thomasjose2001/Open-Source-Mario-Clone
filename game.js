@@ -27,7 +27,16 @@ function main() {
 	//---- Game Loop ----
 	let gameRun = function () {
 		mario.movement();
-		//mario.draw();
+		
+		mario.setyPos(mario.getyPos() + mario.getFallingVel());
+		if (mario.getyPos() + mario.getHeight() + mario.getFallingVel() <= (240 - (16*2 + 1))) {
+			mario.setFallingVel(mario.getFallingVel() + mario.getGravity());
+		}
+		else
+			mario.setFallingVel(0);
+			
+		mario.draw();
+		
 		//console.log("X coord: "+ mario.getyPos());
 		//console.log("Y coord: " + mario.getxPos());
 		//console.log("Falling Velocity: " + mario.getFallingVel());
@@ -187,12 +196,13 @@ class Mario {
 		this.camera = camera;
 		this.width = 26;									// Size in blocks ( not pixels )
 		this.height = 32;
-		this.xPos = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
+		this.xPos = 10;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
 		this.yPos = 240 - (16 * 4 );
-		this.fallingVelocity = 2;
+		this.fallingVelocity = 0;
 		this.runningVelocity = 2;
 		this.acceleration = 0.5;
 		this.jumptAmount = 5;
+		this.gravity = 0.1;
 		this.keys = { up: false,
 			      right: false,
 			      left: false
@@ -208,23 +218,20 @@ class Mario {
 	getRunningVel() {return this.runningVelocity;}
 	getFallingVel() {return this.fallingVelocity;}
 	getAcceleration() {return this.acceleration;}
+	getGravity() {return this.gravity;}
 	
 	/* Mutators */
 	setxPos( num ) {
 		this.xPos = num;
-		return this.xPos;
 	}
 	setyPos( num ) {
 		this.yPos = num;
-		return this.yPos;
 	}
 	setFallingVel( num ) { 
 		this.fallingVelocity = num;
-		return this.fallingVelocity;
 	}
 	setRunningVel( num ) { 
 		this.runningVelocity = num;
-		return this.runningVelocity;
 	}
 	// update movement states
 	moveUp() { this.keys["up"] = true; }
@@ -235,42 +242,39 @@ class Mario {
 	stopRight() { this.keys["right"] = false;}
 
 	// Actual jumping and lateral movement operations
-	jump() {
-		console.log("up");
-		this.yPos += this.fallingVelocity -= this.jumptAmount;
-	}
+	/*jump() {
+		
+	} */
 	left() {
 		console.log("left")
 		// check left bound of the screen (could be a function later)
 		if ( this.xPos - this.width >= 0 ) {
-			this.xPos -= this.runningVelocity += this.acceleration;
+			//this.xPos -= this.runningVelocity += this.acceleration;
+			this.xPos -= 0.67;
 			//platformDirection = "negative"; keep track of running direction!! for later
 		}
 	}
 	right() {
 		console.log("right");
 		// check right bound of the screen
+		
 		if ( this.xPos + this.width + this.acceleration <= this.canvasWidth ) {
-			this.xPos += this.runningVelocity += this.acceleration;
+			this.xPos += 0.67;
 			//platformDirection = "positive"; here too !!
 		}
 	}
-
 	movement() {
 		if (this.keys["up"] == true){
-			this.jump();
-			this.draw();	
+			this.fallingVelocity -= 1;
+			//this.jump();
 		}
 		if (this.keys["left"] == true){
 			this.left();
 			this.camera.scroll(-1);
-			this.draw();
 		}	
 		if (this.keys["right"] == true){
 			this.right();
 			this.camera.scroll(1);
-			this.right();
-			this.draw();
 		}	
 	}
 	
