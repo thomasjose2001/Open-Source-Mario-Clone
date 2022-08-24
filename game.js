@@ -4,91 +4,26 @@
 /* --------------------------------------------------------- */
 /* Function Oriented Programming */
 async function main() {
-	let camera = new Camera();  							// the active camera (what is displayed for the user to see)
-	let canvas = document.getElementById("canvas");			// the whole map of the game
+	let camera = new Camera();
+	let input = new InputHandler();  						
+	let canvas = document.getElementById("canvas");			
+	canvas.width = 256;
+	canvas.height= 240; 
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
 	let spriteSheet = document.getElementById("sprites");   // Image that contains all the sprites in the game
-	// We could add all the blocks here as a dictionary with the
-	// coordinates in the spreadsheet
-	// maybe go through a textfile and build the dictionary
-	const tileMap = {};
-	await setData(tileMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
-	//console.log(tileMap);
-	//console.log(tileMap.BrickBlockBrown.x);
-	let mapMatrix = new MatrixMap(50, 150);					// Map Object: should be 16 * 15 blocks like in the original mario game!! 
-	let mario = new Mario(context, canvas.width, camera);
-	const divWidth = 256;
-	const divHeight = 240;
-	const blockHeight = 16;							// Mario Object: should be updated with the sprite and watching the video
-	const gravity = 1.2;
-	render(); // render the whole level on the canvas
-	mario.draw();
-	
+	const spriteMap = {};
+	await setData(spriteMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
+	let player = new Player(canvas.width, canvas.height, spriteSheet, spriteMap, camera);
+	render();
+
 	//---- Game Loop ----
 	let gameRun = function () {
-		mario.movement();
-		
-		mario.setyPos(mario.getyPos() + mario.getFallingVel());
-		if (mario.getyPos() + mario.getHeight() + mario.getFallingVel() <= (240 - (16*2 + 1))) {
-			mario.setFallingVel(mario.getFallingVel() + mario.getGravity());
-		}
-		else
-			mario.setFallingVel(0);
-			
-		mario.draw();
-		
-		//console.log("X coord: "+ mario.getyPos());
-		//console.log("Y coord: " + mario.getxPos());
-		//console.log("Falling Velocity: " + mario.getFallingVel());
-		
-		// falling condition
-		
-		/*if ( mario.getyPos() + mario.getFallingVel() + mario.getHeight() <= canvas.height ){
-			mario.setyPos( mario.getyPos() + mario.setFallingVel( mario.getFallingVel() + gravity ) );
-		}	
-		else 
-			mario.setFallingVel(0);
-		
-		if ( mario.getRunningVel >= 4 )
-			mario.setRunningVel(4);
-		console.log("looping the game"); */
-		
-		
-		// Update the game very fast by calling the gameRun function over and over again
+		context.clearRect( 0, 0, canvas.width, canvas.height);
+		render();
+		player.draw(context);
+		player.update(input);
 		requestAnimationFrame(gameRun);	
 	} 
-
-	// ---- Event Listeners ---- //
-	document.addEventListener('keydown', (event) => {
-		if (event.key == "w"){
-			mario.moveUp();
-		}
-		if (event.key == "a"){
-			mario.moveLeft();
-		}
-		if (event.key == "d"){
-			mario.moveRight();
-		}
-	});
-
-	document.addEventListener('keyup', (event) => {
-
-		if (event.key == "w"){
-			//mario.setFallingVel( mario.getFallingVel() + jumptAmount);
-			mario.stopUp();
-			//mapMatrix.updateMatrixUp(mario);
-		}	
-		if (event.key == "a"){
-			mario.stopLeft();
-			//mapMatrix.updateMatrixLeft(mario);
-		}
-		if (event.key == "d") {
-			mario.stopRight();
-			//mapMatrix.updateMatrixRight(mario);
-		}
-		
-		mario.setRunningVel(0);
-	});
 
 	function render() {
 		// Paint the background in blue
@@ -100,26 +35,25 @@ async function main() {
 		let xblocks = 16;
 		let yblocks = 15;
 		// dimensions in pixels per block
-		let xdim = divWidth / xblocks;
-		let ydim = divHeight / yblocks;
+		let xdim = canvas.width / xblocks;
+		let ydim = canvas.height / yblocks;
 		for (let i = 0; i < yblocks; i++){
 			if ( i < (yblocks - 2) ){
 				for (let j = 0; j < xblocks; j++){
-					context.drawImage(spriteSheet, tileMap.Empty.x, tileMap.Empty.y, tileMap.Empty.w, tileMap.Empty.h, j * xdim, i * ydim, xdim, ydim);
+					context.drawImage(spriteSheet, spriteMap.Empty.x, spriteMap.Empty.y, spriteMap.Empty.w, spriteMap.Empty.h, j * xdim, i * ydim, xdim, ydim);
 				}
 			} 
 			else{
 				for (let j = 0; j < xblocks; j++){
-					context.drawImage(spriteSheet, tileMap.BrickBlockBrown.x, tileMap.BrickBlockBrown.y, tileMap.BrickBlockBrown.w, tileMap.BrickBlockBrown.h, j * xdim, i * ydim, xdim, ydim)
+					context.drawImage(spriteSheet, spriteMap.BrickBlockBrown.x, spriteMap.BrickBlockBrown.y, spriteMap.BrickBlockBrown.w, spriteMap.BrickBlockBrown.h, j * xdim, i * ydim, xdim, ydim)
 				}
 			}
 		}
-		mapMatrix.createMap();
+		//mapMatrix.createMap();
 		
 	}
 
 	async function setData( spriteMap ) {
-		
 		try{
 			const response = await fetch('./coords.json')
 		
@@ -129,34 +63,52 @@ async function main() {
 
 			const jsonObject = await response.json();
 			
-			console.log(jsonObject["frames"][0]);
 			let spriteCount = jsonObject["frames"]["length"];
 			for (let i = 0; i < spriteCount; i++){
 				let spriteName = jsonObject["frames"][i]["filename"]; // image.png
 				spriteName = spriteName.substr(0, spriteName.indexOf(".")); // image
 				spriteMap[ spriteName ] = jsonObject["frames"][i]["frame"]; // key = image & value = position and dimensions
-				console.log(spriteMap[ spriteName ]);
 			}
-			console.log(spriteMap);
-			console.log(spriteMap.BrickBlockBrown.x);
-			console.log("finish jsonObject");
+			console.log("Sprite Map loaded");
 		}
 		catch(error) {
-			console.error(`Could load sprite map correctly: ${error}`);
+			console.error(`Error loading sprite map: ${error}`);
 		}
 	}
 	
-	// Should we list all parameters in here?
-	// we could pass all objects to update into an abstract object list and hand them to gameRun!!!
-	// RUN THIS when rendering is integrated with the canvas and mario
 	gameRun();
 }
 
-
-
-
 /* --------------------------------------------------------- */
 /* Object Oriented Programming */
+
+// Handles all input events
+class InputHandler{
+	constructor(){
+		this.keys = { up: false,
+					  right: false,
+					  left: false
+		  			};
+		
+		window.addEventListener('keydown', (event) => {
+			if (event.key == "w")
+				this.keys["up"] = true;
+			if (event.key == "a")
+				this.keys["left"] = true;
+			if (event.key == "d")
+				this.keys["right"] = true;
+		});
+
+		window.addEventListener('keyup', (event) => {
+			if (event.key == "w")
+				this.keys["up"] = false;
+			if (event.key == "a")
+				this.keys["left"] = false;
+			if (event.key == "d")
+				this.keys["right"] = false;
+		});
+	}
+}
 
 class Camera {
 	constructor(){
@@ -217,24 +169,23 @@ class MatrixMap {
 }	
 }
 
-class Mario {
-	constructor(context, canvasWidth, camera) {
-		this.context = context;		
-		this.canvasWidth = canvasWidth;
+class Player {
+	constructor(gameWidth, gameHeight, spriteSheet, spriteMap, camera) {	
+		this.gameWidth = gameWidth;
+		this.gameHeight = gameHeight; 
+		this.spriteSheet = spriteSheet;   // all the spritesheets in the game
+		this.spriteMap = spriteMap;		  // the object to know sprites positions in the spritesheet
+		this.sprite = this.spriteMap.Mario;
+		this.width = 26; // pixels	
+		this.height = 32; // pixels
 		this.camera = camera;
-		this.width = 26;									// Size in blocks ( not pixels )
-		this.height = 32;
-		this.xPos = 10;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
-		this.yPos = 240 - (16 * 4 );
-		this.fallingVelocity = 0;
-		this.runningVelocity = 2;
-		this.acceleration = 0.5;
-		this.jumptAmount = 5;
-		this.gravity = 0.1;
-		this.keys = { up: false,
-			      right: false,
-			      left: false
-			    };
+		this.x = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
+		this.y = this.gameHeight - this.height; // bottom of game area
+		this.rightDirection = true;   // direction of mario pointing to the right
+		this.speed = 0;
+		this.jumpSpeed = 0;
+		this.weight = 1;
+		 
 	}
 
 	/* Accesors */
@@ -261,57 +212,51 @@ class Mario {
 	setRunningVel( num ) { 
 		this.runningVelocity = num;
 	}
-	// update movement states
-	moveUp() { this.keys["up"] = true; }
-	stopUp() { this.keys["up"] = false; }
-	moveLeft() { this.keys["left"] = true; }
-	stopLeft() { this.keys["left"] = false;}
-	moveRight() { this.keys["right"] = true;}
-	stopRight() { this.keys["right"] = false;}
+	update(input) {
+		if (input.keys["right"] == true) this.speed = 5;
+		else if (input.keys["left"] == true) this.speed = -5;
+		else this.speed = 0;
 
-	// Actual jumping and lateral movement operations
-	/*jump() {
+		/* you can only jump if key up is pressed and you are on the ground */
+		if (input.keys["up"] == true && this.onGround() ) this.jumpSpeed -= 10; // negative to move up
+
+		/* update horizontal */
+		this.x += this.speed; 
+
+		/* check horizontal bounds */
+		if (this.x < 0) this.x = 0;
+		else if (this.x > this.gameWidth - this.width ) this.x = this.gameWidth - this.width;
 		
-	} */
-	left() {
-		console.log("left")
-		// check left bound of the screen (could be a function later)
-		if ( this.xPos - this.width >= 0 ) {
-			//this.xPos -= this.runningVelocity += this.acceleration;
-			this.xPos -= 0.67;
-			//platformDirection = "negative"; keep track of running direction!! for later
+		/* update vertical */
+		this.y += this.jumpSpeed;
+
+		/* apply weight when mario is not on the ground & change to jumping sprite */
+		if ( !this.onGround() ){
+			this.jumpSpeed += this.weight;
+			this.sprite = this.spriteMap.MarioJump;
 		}
+		else {
+			this.sprite = this.spriteMap.Mario;
+			this.jumpSpeed = 0;
+		}
+
+		if (this.y > this.gameHeight - this.height) this.y = this.gameHeight - this.height;
 	}
-	right() {
-		console.log("right");
-		// check right bound of the screen
-		
-		if ( this.xPos + this.width + this.acceleration <= this.canvasWidth ) {
-			this.xPos += 0.67;
-			//platformDirection = "positive"; here too !!
-		}
-	}
-	movement() {
-		if (this.keys["up"] == true){
-			this.fallingVelocity -= 1;
-			//this.jump();
-		}
-		if (this.keys["left"] == true){
-			this.left();
-			this.camera.scroll(-1);
-		}	
-		if (this.keys["right"] == true){
-			this.right();
-			this.camera.scroll(1);
-		}	
+
+	// we can modify this method later to check for solid structures
+	onGround(){
+		return this.y >= this.gameHeight - this.height;
 	}
 	
 	//Draws Mario in its current position on the screen
-	draw() {
-		this.context.clearRect( 0, 0, canvas.width, canvas.height - 32 );
-		this.context.fillRect( this.xPos, this.yPos, this.width, this.height );
+	draw(context) {
+		//I'm working here!!! trying to display mario on canvas
+		//clearRect( 0, 0, canvas.width, canvas.height - 32 );
+		context.fillStyle = 'rgba(0, 0, 0, 0)';
+		context.fillRect( this.x, this.y, this.width, this.height );
+		context.drawImage(this.spriteSheet, this.sprite.x, this.sprite.y, this.sprite.w, this.sprite.h, this.x, this.y, this.width, this.height);
 		//this.context.stroke();
-	}	
+	}
 }
-
 window.onload = main;
+// -- Testing zone --
