@@ -3,7 +3,7 @@
 
 /* --------------------------------------------------------- */
 /* Function Oriented Programming */
-function main() {
+async function main() {
 	let camera = new Camera();  							// the active camera (what is displayed for the user to see)
 	let canvas = document.getElementById("canvas");			// the whole map of the game
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
@@ -11,10 +11,10 @@ function main() {
 	// We could add all the blocks here as a dictionary with the
 	// coordinates in the spreadsheet
 	// maybe go through a textfile and build the dictionary
-	const tileMap = { "BrickBlockBrown":{"x":0,"y":0,"h":16,"w":16},
-		                   "Empty":{"x":16,"y":0,"h":16,"w":16}
-		          	//"Mario":{"x":, "y":, "h":, "w": }
-					};
+	const tileMap = {};
+	await setData(tileMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
+	//console.log(tileMap);
+	//console.log(tileMap.BrickBlockBrown.x);
 	let mapMatrix = new MatrixMap(50, 150);					// Map Object: should be 16 * 15 blocks like in the original mario game!! 
 	let mario = new Mario(context, canvas.width, camera);
 	const divWidth = 256;
@@ -116,6 +116,34 @@ function main() {
 		}
 		mapMatrix.createMap();
 		
+	}
+
+	async function setData( spriteMap ) {
+		
+		try{
+			const response = await fetch('./coords.json')
+		
+			if (!response.ok) {
+				throw new Error(`HTTP error: ${response.status}`);
+			}
+
+			const jsonObject = await response.json();
+			
+			console.log(jsonObject["frames"][0]);
+			let spriteCount = jsonObject["frames"]["length"];
+			for (let i = 0; i < spriteCount; i++){
+				let spriteName = jsonObject["frames"][i]["filename"]; // image.png
+				spriteName = spriteName.substr(0, spriteName.indexOf(".")); // image
+				spriteMap[ spriteName ] = jsonObject["frames"][i]["frame"]; // key = image & value = position and dimensions
+				console.log(spriteMap[ spriteName ]);
+			}
+			console.log(spriteMap);
+			console.log(spriteMap.BrickBlockBrown.x);
+			console.log("finish jsonObject");
+		}
+		catch(error) {
+			console.error(`Could load sprite map correctly: ${error}`);
+		}
 	}
 	
 	// Should we list all parameters in here?
