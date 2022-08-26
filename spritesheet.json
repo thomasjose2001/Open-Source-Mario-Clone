@@ -1,0 +1,172 @@
+{"frames": [
+
+{
+	"filename": "BrickBlockBrown.png",
+	"frame": {"x":0,"y":0,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+},
+{
+	"filename": "BrickBlockDark.png",
+	"frame": {"x":16,"y":0,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+},
+{
+	"filename": "Empty.png",
+	"frame": {"x":32,"y":0,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+},
+{
+	"filename": "EmptyBlock.png",
+	"frame": {"x":48,"y":0,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+},
+{
+	"filename": "MarioClimb1.gif",
+	"frame": {"x":64,"y":0,"w":28,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":32},
+	"sourceSize": {"w":28,"h":32}
+},
+{
+	"filename": "MarioClimb2.gif",
+	"frame": {"x":92,"y":0,"w":26,"h":30},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":26,"h":30},
+	"sourceSize": {"w":26,"h":30}
+},
+{
+	"filename": "MarioDead.gif",
+	"frame": {"x":118,"y":0,"w":30,"h":28},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":30,"h":28},
+	"sourceSize": {"w":30,"h":28}
+},
+{
+	"filename": "MarioJumpLeft.gif",
+	"frame": {"x":148,"y":0,"w":34,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":34,"h":32},
+	"sourceSize": {"w":34,"h":32}
+},
+{
+	"filename": "MarioJumpRight.gif",
+	"frame": {"x":182,"y":0,"w":34,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":34,"h":32},
+	"sourceSize": {"w":34,"h":32}
+},
+{
+	"filename": "MarioLeft.gif",
+	"frame": {"x":216,"y":0,"w":26,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":26,"h":32},
+	"sourceSize": {"w":26,"h":32}
+},
+{
+	"filename": "MarioRight.gif",
+	"frame": {"x":242,"y":0,"w":26,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":26,"h":32},
+	"sourceSize": {"w":26,"h":32}
+},
+{
+	"filename": "MarioSkid.gif",
+	"frame": {"x":268,"y":0,"w":28,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":32},
+	"sourceSize": {"w":28,"h":32}
+},
+{
+	"filename": "MarioSwim1.gif",
+	"frame": {"x":296,"y":0,"w":28,"h":30},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":30},
+	"sourceSize": {"w":28,"h":30}
+},
+{
+	"filename": "MarioSwim2.gif",
+	"frame": {"x":324,"y":0,"w":28,"h":30},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":30},
+	"sourceSize": {"w":28,"h":30}
+},
+{
+	"filename": "MarioSwim3.gif",
+	"frame": {"x":352,"y":0,"w":28,"h":30},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":30},
+	"sourceSize": {"w":28,"h":30}
+},
+{
+	"filename": "MarioSwim4.gif",
+	"frame": {"x":380,"y":0,"w":30,"h":30},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":30,"h":30},
+	"sourceSize": {"w":30,"h":30}
+},
+{
+	"filename": "MarioWalkRight1.gif",
+	"frame": {"x":410,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+{
+	"filename": "MarioWalkRight2.gif",
+	"frame": {"x":442,"y":0,"w":24,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":32},
+	"sourceSize": {"w":24,"h":32}
+},
+{
+	"filename": "MarioWalkRight3.gif",
+	"frame": {"x":466,"y":0,"w":28,"h":30},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":30},
+	"sourceSize": {"w":28,"h":30}
+},
+{
+	"filename": "QuestionBlock.gif",
+	"frame": {"x":494,"y":0,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "spritesheet.png",
+	"format": "RGBA8888",
+	"size": {"w":510,"h":32},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:0812a93e7ea4dab5b19dc96b076e7442:ca6eaaf4e48c2bbf358a72927b94acb6:729adc6043343cfda41c447ce8f464d6$"
+}
+}

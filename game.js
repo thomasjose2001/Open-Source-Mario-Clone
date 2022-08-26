@@ -4,17 +4,16 @@
 /* --------------------------------------------------------- */
 /* Function Oriented Programming */
 async function main() {
-	let camera = new Camera();
+	let camera = new Camera(256, 240);
 	let input = new InputHandler();  						
 	let canvas = document.getElementById("canvas");			
-	canvas.width = 256;
+	canvas.width = 256*10; 
 	canvas.height= 240; 
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
 	let spriteSheet = document.getElementById("sprites");   // Image that contains all the sprites in the game
 	const spriteMap = {};
 	await setData(spriteMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
 	let player = new Player(canvas.width, canvas.height, spriteSheet, spriteMap, camera);
-	render();
 
 	//---- Game Loop ----
 	let gameRun = function () {
@@ -35,12 +34,12 @@ async function main() {
 		let xblocks = 16;
 		let yblocks = 15;
 		// dimensions in pixels per block
-		let xdim = canvas.width / xblocks;
-		let ydim = canvas.height / yblocks;
+		let xdim = camera.width / xblocks;
+		let ydim = camera.height / yblocks;
 		for (let i = 0; i < yblocks; i++){
 			if ( i < (yblocks - 2) ){
 				for (let j = 0; j < xblocks; j++){
-					context.drawImage(spriteSheet, spriteMap.Empty.x, spriteMap.Empty.y, spriteMap.Empty.w, spriteMap.Empty.h, j * xdim, i * ydim, xdim, ydim);
+					//context.drawImage(spriteSheet, spriteMap.Empty.x, spriteMap.Empty.y, spriteMap.Empty.w, spriteMap.Empty.h, j * xdim, i * ydim, xdim, ydim);
 				}
 			} 
 			else{
@@ -55,7 +54,7 @@ async function main() {
 
 	async function setData( spriteMap ) {
 		try{
-			const response = await fetch('./coords.json')
+			const response = await fetch('./spritesheet.json')
 		
 			if (!response.ok) {
 				throw new Error(`HTTP error: ${response.status}`);
@@ -69,6 +68,7 @@ async function main() {
 				spriteName = spriteName.substr(0, spriteName.indexOf(".")); // image
 				spriteMap[ spriteName ] = jsonObject["frames"][i]["frame"]; // key = image & value = position and dimensions
 			}
+			console.log(spriteMap);
 			console.log("Sprite Map loaded");
 		}
 		catch(error) {
@@ -111,11 +111,14 @@ class InputHandler{
 }
 
 class Camera {
-	constructor(){
-		this.cam = document.getElementById("cam");
+	constructor(width, height){
+		this.cam = document.getElementById("camera");
+		this.width = width;
+		this.height = height;
+		this.speed = 0;
 	}
 	// negative: move left, positive: move right
-	scroll(num) { this.cam.scrollLeft += num; }
+	scroll() { this.cam.scrollLeft += this.speed; }
 }
 
 class MatrixMap {
@@ -175,13 +178,14 @@ class Player {
 		this.gameHeight = gameHeight; 
 		this.spriteSheet = spriteSheet;   // all the spritesheets in the game
 		this.spriteMap = spriteMap;		  // the object to know sprites positions in the spritesheet
-		this.sprite = this.spriteMap.Mario;
+		//this.sprite = this.spriteMap.MarioRight;
+		this.sprite = this.spriteMap.BrickBlockBrown;
 		this.width = 26; // pixels	
 		this.height = 32; // pixels
 		this.camera = camera;
 		this.x = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
 		this.y = this.gameHeight - this.height; // bottom of game area
-		this.rightDirection = true;   // direction of mario pointing to the right
+		this.direction = "Right";   // Mario's Direction
 		this.speed = 0;
 		this.jumpSpeed = 0;
 		this.weight = 1;
@@ -213,15 +217,33 @@ class Player {
 		this.runningVelocity = num;
 	}
 	update(input) {
-		if (input.keys["right"] == true) this.speed = 5;
-		else if (input.keys["left"] == true) this.speed = -5;
-		else this.speed = 0;
+		if (input.keys["right"] == true) {
+			this.speed = 5;
+			this.direction = "Right";
+			this.sprite = this.spriteMap.MarioRight;
+			// update scroll speed
+			this.camera.speed = 5;
+			//console.log("RIGHT");
+		}
+		else if (input.keys["left"] == true) {
+			this.speed = -5;
+			this.direction = "Left";
+			this.sprite = this.spriteMap.MarioLeft;
+			// update scroll speed
+			this.camera.speed = -5;
+			//console.log(this.sprite)
+		}
+		else {
+			this.speed = 0;
+			this.camera.speed = 0;
+		}
 
 		/* you can only jump if key up is pressed and you are on the ground */
 		if (input.keys["up"] == true && this.onGround() ) this.jumpSpeed -= 10; // negative to move up
 
-		/* update horizontal */
+		/* update horizontal: both player and background */
 		this.x += this.speed; 
+		this.camera.scroll();
 
 		/* check horizontal bounds */
 		if (this.x < 0) this.x = 0;
@@ -233,10 +255,10 @@ class Player {
 		/* apply weight when mario is not on the ground & change to jumping sprite */
 		if ( !this.onGround() ){
 			this.jumpSpeed += this.weight;
-			this.sprite = this.spriteMap.MarioJump;
+			this.sprite = this.spriteMap["MarioJump"+this.direction]
 		}
 		else {
-			this.sprite = this.spriteMap.Mario;
+			this.sprite = this.spriteMap["Mario"+this.direction];
 			this.jumpSpeed = 0;
 		}
 
