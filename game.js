@@ -4,7 +4,6 @@
 /* --------------------------------------------------------- */
 /* Function Oriented Programming */
 async function main() {
-	let camera = new Camera(256, 240);
 	let input = new InputHandler();  						
 	let canvas = document.getElementById("canvas");			
 	canvas.width = 256*10; 
@@ -13,14 +12,15 @@ async function main() {
 	let spriteSheet = document.getElementById("sprites");   // Image that contains all the sprites in the game
 	const spriteMap = {};
 	await setData(spriteMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
-	let player = new Player(canvas.width, canvas.height, spriteSheet, spriteMap, camera);
-
+	let player = new Player(canvas.width, canvas.height, spriteSheet, spriteMap);
+	let camera = new Camera(256, 240, player);
 	//---- Game Loop ----
 	let gameRun = function () {
 		context.clearRect( 0, 0, canvas.width, canvas.height);
 		render();
 		player.draw(context);
 		player.update(input);
+		camera.scroll();
 		requestAnimationFrame(gameRun);	
 	} 
 
@@ -111,14 +111,18 @@ class InputHandler{
 }
 
 class Camera {
-	constructor(width, height){
+	constructor(width, height, focus){
 		this.cam = document.getElementById("camera");
 		this.width = width;
 		this.height = height;
+		this.focus = focus;
 		this.speed = 0;
 	}
 	// negative: move left, positive: move right
-	scroll() { this.cam.scrollLeft += this.speed; }
+	scroll() { 
+		//console.log("Camera position: "+this.cam.scrollLeft);
+		this.cam.scrollLeft = this.focus.x - 115; // 256/2 - mario's width/2
+	}
 }
 
 class MatrixMap {
@@ -173,7 +177,7 @@ class MatrixMap {
 }
 
 class Player {
-	constructor(gameWidth, gameHeight, spriteSheet, spriteMap, camera) {	
+	constructor(gameWidth, gameHeight, spriteSheet, spriteMap) {	
 		this.gameWidth = gameWidth;
 		this.gameHeight = gameHeight; 
 		this.spriteSheet = spriteSheet;   // all the spritesheets in the game
@@ -182,7 +186,6 @@ class Player {
 		this.sprite = this.spriteMap.BrickBlockBrown;
 		this.width = 26; // pixels	
 		this.height = 32; // pixels
-		this.camera = camera;
 		this.x = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
 		this.y = this.gameHeight - this.height; // bottom of game area
 		this.direction = "Right";   // Mario's Direction
@@ -217,25 +220,19 @@ class Player {
 		this.runningVelocity = num;
 	}
 	update(input) {
-		if (input.keys["right"] == true) {
+		if (input.keys["right"] == true && this.x < this.gameWidth) {
 			this.speed = 5;
 			this.direction = "Right";
 			this.sprite = this.spriteMap.MarioRight;
-			// update scroll speed
-			this.camera.speed = 5;
 			//console.log("RIGHT");
 		}
-		else if (input.keys["left"] == true) {
+		else if (input.keys["left"] == true && this.x >= 0) {
 			this.speed = -5;
 			this.direction = "Left";
 			this.sprite = this.spriteMap.MarioLeft;
-			// update scroll speed
-			this.camera.speed = -5;
-			//console.log(this.sprite)
 		}
 		else {
 			this.speed = 0;
-			this.camera.speed = 0;
 		}
 
 		/* you can only jump if key up is pressed and you are on the ground */
@@ -243,7 +240,6 @@ class Player {
 
 		/* update horizontal: both player and background */
 		this.x += this.speed; 
-		this.camera.scroll();
 
 		/* check horizontal bounds */
 		if (this.x < 0) this.x = 0;
