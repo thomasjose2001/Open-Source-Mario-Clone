@@ -10,9 +10,9 @@ async function main() {
 	canvas.height= 240; 
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
 	let spriteSheet = document.getElementById("sprites");   // Image that contains all the sprites in the game
-	const spriteMap = {};
-	await setData(spriteMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
-	let player = new Player(canvas.width, canvas.height, spriteSheet, spriteMap);
+	const GlobalSpriteMap = {};
+	await setData(GlobalSpriteMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
+	let player = new Player(canvas.width, canvas.height, spriteSheet, getSpriteMap("Mario", GlobalSpriteMap) );
 	let camera = new Camera(256, 240, player);
 	//---- Game Loop ----
 	let gameRun = function () {
@@ -44,7 +44,7 @@ async function main() {
 			} 
 			else{
 				for (let j = 0; j < xblocks; j++){
-					context.drawImage(spriteSheet, spriteMap.BrickBlockBrown.x, spriteMap.BrickBlockBrown.y, spriteMap.BrickBlockBrown.w, spriteMap.BrickBlockBrown.h, j * xdim, i * ydim, xdim, ydim)
+					context.drawImage(spriteSheet, GlobalSpriteMap.BrickBlockBrown.x, GlobalSpriteMap.BrickBlockBrown.y, GlobalSpriteMap.BrickBlockBrown.w, GlobalSpriteMap.BrickBlockBrown.h, j * xdim, i * ydim, xdim, ydim)
 				}
 			}
 		}
@@ -74,6 +74,27 @@ async function main() {
 		catch(error) {
 			console.error(`Error loading sprite map: ${error}`);
 		}
+	}
+
+	// gathers the spriteMap of a specific character by left and right (for constant time animation access)
+	function getSpriteMap( characterName, GlobalSpriteMap){
+		characterSpriteMap = { R:{}, // Right
+							   L:{}, // Left
+							   N:{}  // No direction
+		}; 
+
+		entriesList = Object.entries( GlobalSpriteMap );
+		for(let i = 0; i < entriesList.length; i++ ){
+			let spriteName = entriesList[i][0];
+			let lastChar = spriteName.length - 1;
+			if ( spriteName.includes(characterName) ){
+				//here we can also check for the number before the direction to know if it is an animation
+				characterSpriteMap[ spriteName.charAt( lastChar )][ spriteName.substring(0, lastChar)]  = entriesList[i][1];
+			}
+		}
+
+		console.log(characterSpriteMap);
+		return characterSpriteMap;
 	}
 	
 	gameRun();
@@ -183,12 +204,12 @@ class Player {
 		this.spriteSheet = spriteSheet;   // all the spritesheets in the game
 		this.spriteMap = spriteMap;		  // the object to know sprites positions in the spritesheet
 		//this.sprite = this.spriteMap.MarioRight;
-		this.sprite = this.spriteMap.BrickBlockBrown;
+		this.sprite = "Mario";
 		this.width = 26; // pixels	
 		this.height = 32; // pixels
 		this.x = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
 		this.y = this.gameHeight - this.height; // bottom of game area
-		this.direction = "Right";   // Mario's Direction
+		this.direction = "R";   // Mario's Direction
 		this.speed = 0;
 		this.jumpSpeed = 0;
 		this.weight = 1;
@@ -222,14 +243,12 @@ class Player {
 	update(input) {
 		if (input.keys["right"] == true && this.x < this.gameWidth) {
 			this.speed = 5;
-			this.direction = "Right";
-			this.sprite = this.spriteMap.MarioRight;
+			this.direction = "R";
 			//console.log("RIGHT");
 		}
 		else if (input.keys["left"] == true && this.x >= 0) {
 			this.speed = -5;
-			this.direction = "Left";
-			this.sprite = this.spriteMap.MarioLeft;
+			this.direction = "L";
 		}
 		else {
 			this.speed = 0;
@@ -251,11 +270,11 @@ class Player {
 		/* apply weight when mario is not on the ground & change to jumping sprite */
 		if ( !this.onGround() ){
 			this.jumpSpeed += this.weight;
-			this.sprite = this.spriteMap["MarioJump"+this.direction]
+			this.sprite = "MarioJump";
 		}
 		else {
-			this.sprite = this.spriteMap["Mario"+this.direction];
 			this.jumpSpeed = 0;
+			this.sprite = "Mario";
 		}
 
 		if (this.y > this.gameHeight - this.height) this.y = this.gameHeight - this.height;
@@ -268,13 +287,15 @@ class Player {
 	
 	//Draws Mario in its current position on the screen
 	draw(context) {
-		//I'm working here!!! trying to display mario on canvas
-		//clearRect( 0, 0, canvas.width, canvas.height - 32 );
+		// right direction and sprite selected
+		let selected = this.spriteMap[this.direction][this.sprite];
 		context.fillStyle = 'rgba(0, 0, 0, 0)';
 		context.fillRect( this.x, this.y, this.width, this.height );
-		context.drawImage(this.spriteSheet, this.sprite.x, this.sprite.y, this.sprite.w, this.sprite.h, this.x, this.y, this.width, this.height);
+		context.drawImage(this.spriteSheet, selected.x, selected.y, selected.w, selected.h, this.x, this.y, this.width, this.height);
 		//this.context.stroke();
 	}
+
+
 }
 window.onload = main;
 // -- Testing zone --
