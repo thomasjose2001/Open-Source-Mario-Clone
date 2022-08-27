@@ -14,13 +14,16 @@ async function main() {
 	await setData(GlobalSpriteMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
 	let player = new Player(canvas.width, canvas.height, spriteSheet, getSpriteMap("Mario", GlobalSpriteMap) );
 	let camera = new Camera(256, 240, player);
+	let staggerFrames = 3; // For animation purposes, helps make animations slower by doing them every n number of frames
+	let gameFrame = 0; // frame counter
 	//---- Game Loop ----
 	let gameRun = function () {
 		context.clearRect( 0, 0, canvas.width, canvas.height);
-		render();
-		player.draw(context);
-		player.update(input);
-		camera.scroll();
+		render(); // draws background
+		player.draw(context, gameFrame, staggerFrames); // draws player with animations
+		player.update(input);  // update position of character
+		camera.scroll();      // scrolls camera depending on its focus
+		gameFrame++;
 		requestAnimationFrame(gameRun);	
 	} 
 
@@ -85,11 +88,18 @@ async function main() {
 
 		entriesList = Object.entries( GlobalSpriteMap );
 		for(let i = 0; i < entriesList.length; i++ ){
-			let spriteName = entriesList[i][0];
-			let lastChar = spriteName.length - 1;
+			let spriteName = entriesList[i][0];   // Sprite's name
+			let dirIndex = spriteName.length - 1; // index of sprite's direction in name
+			let animIndex = dirIndex - 1; // index of the animation sequence number
+
+			// if the sprite is part of the character sprite map
 			if ( spriteName.includes(characterName) ){
-				//here we can also check for the number before the direction to know if it is an animation
-				characterSpriteMap[ spriteName.charAt( lastChar )][ spriteName.substring(0, lastChar)]  = entriesList[i][1];
+				// check to create an empty list to store animations per sprite definition
+				if (characterSpriteMap[ spriteName.charAt( dirIndex )][ spriteName.substring(0, animIndex)] === undefined)
+					characterSpriteMap[ spriteName.charAt( dirIndex )][ spriteName.substring(0, animIndex)]  = [];
+				
+				// characterSpriteMap[direction][spriteName][animation sequence number]
+				characterSpriteMap[ spriteName.charAt( dirIndex )][ spriteName.substring(0, animIndex)].push(entriesList[i][1]);
 			}
 		}
 
@@ -210,6 +220,7 @@ class Player {
 		this.x = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
 		this.y = this.gameHeight - this.height; // bottom of game area
 		this.direction = "R";   // Mario's Direction
+		this.animation = 0;    // animation sequence number
 		this.speed = 0;
 		this.jumpSpeed = 0;
 		this.weight = 1;
@@ -244,18 +255,22 @@ class Player {
 		if (input.keys["right"] == true && this.x < this.gameWidth) {
 			this.speed = 5;
 			this.direction = "R";
+			this.sprite = "MarioWalk";
 			//console.log("RIGHT");
 		}
 		else if (input.keys["left"] == true && this.x >= 0) {
 			this.speed = -5;
 			this.direction = "L";
+			this.sprite = "MarioWalk";
 		}
 		else {
 			this.speed = 0;
+			this.sprite = "Mario";
+			this.animation = 0;
 		}
 
 		/* you can only jump if key up is pressed and you are on the ground */
-		if (input.keys["up"] == true && this.onGround() ) this.jumpSpeed -= 10; // negative to move up
+		if (input.keys["up"] == true && this.onGround() ) this.jumpSpeed -= 15; // negative to move up
 
 		/* update horizontal: both player and background */
 		this.x += this.speed; 
@@ -271,10 +286,10 @@ class Player {
 		if ( !this.onGround() ){
 			this.jumpSpeed += this.weight;
 			this.sprite = "MarioJump";
+			this.animation = 0;
 		}
 		else {
 			this.jumpSpeed = 0;
-			this.sprite = "Mario";
 		}
 
 		if (this.y > this.gameHeight - this.height) this.y = this.gameHeight - this.height;
@@ -286,16 +301,17 @@ class Player {
 	}
 	
 	//Draws Mario in its current position on the screen
-	draw(context) {
-		// right direction and sprite selected
-		let selected = this.spriteMap[this.direction][this.sprite];
-		context.fillStyle = 'rgba(0, 0, 0, 0)';
+	draw(context, gameFrame, staggerFrames) {
+		if (gameFrame % staggerFrames == 0){
+			this.animation = (this.animation + 1) % this.spriteMap[this.direction][this.sprite].length; //must test!
+		}
+		// direction, sprite selected, animation number
+		let selected = this.spriteMap[this.direction][this.sprite][this.animation];
+		context.fillStyle = 'rgba(0, 0, 0, 0)'; // could be run at the beginning?
 		context.fillRect( this.x, this.y, this.width, this.height );
 		context.drawImage(this.spriteSheet, selected.x, selected.y, selected.w, selected.h, this.x, this.y, this.width, this.height);
 		//this.context.stroke();
 	}
-
-
 }
 window.onload = main;
 // -- Testing zone --

@@ -33,8 +33,24 @@
 	"sourceSize": {"w":16,"h":16}
 },
 {
+	"filename": "Mario1L.gif",
+	"frame": {"x":64,"y":0,"w":26,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":26,"h":32},
+	"sourceSize": {"w":26,"h":32}
+},
+{
+	"filename": "Mario1R.gif",
+	"frame": {"x":90,"y":0,"w":26,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":26,"h":32},
+	"sourceSize": {"w":26,"h":32}
+},
+{
 	"filename": "MarioClimb1R.gif",
-	"frame": {"x":64,"y":0,"w":28,"h":32},
+	"frame": {"x":116,"y":0,"w":28,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":32},
@@ -42,54 +58,38 @@
 },
 {
 	"filename": "MarioClimb2R.gif",
-	"frame": {"x":92,"y":0,"w":26,"h":30},
+	"frame": {"x":144,"y":0,"w":26,"h":30},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":26,"h":30},
 	"sourceSize": {"w":26,"h":30}
 },
 {
-	"filename": "MarioDeadN.gif",
-	"frame": {"x":118,"y":0,"w":30,"h":28},
+	"filename": "MarioDead1N.gif",
+	"frame": {"x":170,"y":0,"w":30,"h":28},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":30,"h":28},
 	"sourceSize": {"w":30,"h":28}
 },
 {
-	"filename": "MarioJumpL.gif",
-	"frame": {"x":148,"y":0,"w":34,"h":32},
+	"filename": "MarioJump1L.gif",
+	"frame": {"x":200,"y":0,"w":34,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":34,"h":32},
 	"sourceSize": {"w":34,"h":32}
 },
 {
-	"filename": "MarioJumpR.gif",
-	"frame": {"x":182,"y":0,"w":34,"h":32},
+	"filename": "MarioJump1R.gif",
+	"frame": {"x":234,"y":0,"w":34,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":34,"h":32},
 	"sourceSize": {"w":34,"h":32}
 },
 {
-	"filename": "MarioL.gif",
-	"frame": {"x":216,"y":0,"w":26,"h":32},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":26,"h":32},
-	"sourceSize": {"w":26,"h":32}
-},
-{
-	"filename": "MarioR.gif",
-	"frame": {"x":242,"y":0,"w":26,"h":32},
-	"rotated": false,
-	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":26,"h":32},
-	"sourceSize": {"w":26,"h":32}
-},
-{
-	"filename": "MarioSkidR.gif",
+	"filename": "MarioSkid1R.gif",
 	"frame": {"x":268,"y":0,"w":28,"h":32},
 	"rotated": false,
 	"trimmed": false,
@@ -129,7 +129,7 @@
 	"sourceSize": {"w":30,"h":30}
 },
 {
-	"filename": "MarioWalk1R.gif",
+	"filename": "MarioWalk1L.gif",
 	"frame": {"x":410,"y":0,"w":32,"h":32},
 	"rotated": false,
 	"trimmed": false,
@@ -137,16 +137,40 @@
 	"sourceSize": {"w":32,"h":32}
 },
 {
-	"filename": "MarioWalk2R.gif",
-	"frame": {"x":442,"y":0,"w":24,"h":32},
+	"filename": "MarioWalk1R.gif",
+	"frame": {"x":442,"y":0,"w":32,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+	"sourceSize": {"w":32,"h":32}
+},
+{
+	"filename": "MarioWalk2L.gif",
+	"frame": {"x":474,"y":0,"w":24,"h":32},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":32},
 	"sourceSize": {"w":24,"h":32}
 },
 {
+	"filename": "MarioWalk2R.gif",
+	"frame": {"x":498,"y":0,"w":24,"h":32},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":32},
+	"sourceSize": {"w":24,"h":32}
+},
+{
+	"filename": "MarioWalk3L.gif",
+	"frame": {"x":522,"y":0,"w":28,"h":30},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":30},
+	"sourceSize": {"w":28,"h":30}
+},
+{
 	"filename": "MarioWalk3R.gif",
-	"frame": {"x":466,"y":0,"w":28,"h":30},
+	"frame": {"x":550,"y":0,"w":28,"h":30},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":28,"h":30},
@@ -154,7 +178,7 @@
 },
 {
 	"filename": "QuestionBlock.gif",
-	"frame": {"x":494,"y":0,"w":16,"h":16},
+	"frame": {"x":578,"y":0,"w":16,"h":16},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
@@ -165,8 +189,8 @@
 	"version": "1.0",
 	"image": "spritesheet.png",
 	"format": "RGBA8888",
-	"size": {"w":510,"h":32},
+	"size": {"w":594,"h":32},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:ae3c86577c7322e10b30862649ad8f43:ca6eaaf4e48c2bbf358a72927b94acb6:729adc6043343cfda41c447ce8f464d6$"
+	"smartupdate": "$TexturePacker:SmartUpdate:ec1290e961360de2934545cb170c41bf:3f49f40ed74143b35bc33f7a0478dc95:729adc6043343cfda41c447ce8f464d6$"
 }
 }
