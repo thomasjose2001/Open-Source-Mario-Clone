@@ -4,11 +4,17 @@ body{
 #camera{
     width: 256px;
     height: 240px;
+    /*
+    width: auto;
+    height: auto;
+    */
     overflow: hidden;
 }
 #canvas{
-    background-image: url(https://i.pinimg.com/originals/5e/93/44/5e93446c8e04d4eebb641b953266846c.jpg);
-    /*position: absolute;
+    /*background-image: url(https://i.pinimg.com/originals/5e/93/44/5e93446c8e04d4eebb641b953266846c.jpg);*/
+    background-image: url('./levels/1_1.png');
+    /*
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);

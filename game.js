@@ -9,17 +9,18 @@ async function main() {
 	canvas.width = 256*10; 
 	canvas.height= 240; 
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
+	context.fillStyle = 'rgba(0, 0, 0, 0)'; // could be run at the beginning?
 	let spriteSheet = document.getElementById("sprites");   // Image that contains all the sprites in the game
 	const GlobalSpriteMap = {};
 	await setData(GlobalSpriteMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
 	let player = new Player(canvas.width, canvas.height, spriteSheet, getSpriteMap("Mario", GlobalSpriteMap) );
 	let camera = new Camera(256, 240, player);
-	let staggerFrames = 3; // For animation purposes, helps make animations slower by doing them every n number of frames
+	let staggerFrames = 8; // For animation purposes, helps make animations slower by doing them every n number of frames
 	let gameFrame = 0; // frame counter
 	//---- Game Loop ----
 	let gameRun = function () {
 		context.clearRect( 0, 0, canvas.width, canvas.height);
-		render(); // draws background
+		//render(); // draws background (may not be needed if we put the background static in the canvas with css)
 		player.draw(context, gameFrame, staggerFrames); // draws player with animations
 		player.update(input);  // update position of character
 		camera.scroll();      // scrolls camera depending on its focus
@@ -302,14 +303,14 @@ class Player {
 	
 	//Draws Mario in its current position on the screen
 	draw(context, gameFrame, staggerFrames) {
+		// Change Animation correspondingly
 		if (gameFrame % staggerFrames == 0){
 			this.animation = (this.animation + 1) % this.spriteMap[this.direction][this.sprite].length; //must test!
 		}
 		// direction, sprite selected, animation number
 		let selected = this.spriteMap[this.direction][this.sprite][this.animation];
-		context.fillStyle = 'rgba(0, 0, 0, 0)'; // could be run at the beginning?
 		context.fillRect( this.x, this.y, this.width, this.height );
-		context.drawImage(this.spriteSheet, selected.x, selected.y, selected.w, selected.h, this.x, this.y, this.width, this.height);
+		context.drawImage(this.spriteSheet, selected.x, selected.y, selected.w, selected.h, this.x, this.y, selected.w, selected.h);
 		//this.context.stroke();
 	}
 }
