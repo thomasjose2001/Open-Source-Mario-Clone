@@ -8,11 +8,15 @@ async function main() {
 	let canvas = document.getElementById("canvas");			
 	canvas.width = 256*10; 
 	canvas.height= 240; 
+	const mapWidth = 256;		
+	const mapHeight = 240;
+	const blockSize = 16;
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
 	let spriteSheet = document.getElementById("sprites");   // Image that contains all the sprites in the game
 	const GlobalSpriteMap = {};
 	await setData(GlobalSpriteMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
-	let player = new Player(canvas.width, canvas.height, spriteSheet, getSpriteMap("Mario", GlobalSpriteMap) );
+	let mapMatrix = new MatrixMap(mapWidth / blockSize, mapHeight / blockSize);			// Create map matirx object
+	let player = new Player(canvas.width, canvas.height, spriteSheet, getSpriteMap("Mario", GlobalSpriteMap), mapMatrix);
 	let camera = new Camera(256, 240, player);
 	//---- Game Loop ----
 	let gameRun = function () {
@@ -44,11 +48,11 @@ async function main() {
 			} 
 			else{
 				for (let j = 0; j < xblocks; j++){
-					context.drawImage(spriteSheet, GlobalSpriteMap.BrickBlockBrown.x, GlobalSpriteMap.BrickBlockBrown.y, GlobalSpriteMap.BrickBlockBrown.w, GlobalSpriteMap.BrickBlockBrown.h, j * xdim, i * ydim, xdim, ydim)
+					context.drawImage(spriteSheet, GlobalSpriteMap.BrickBlockBrown.x, GlobalSpriteMap.BrickBlockBrown.y, GlobalSpriteMap.BrickBlockBrown.w, GlobalSpriteMap.BrickBlockBrown.h, j * xdim, i * ydim, xdim, ydim)	
 				}
 			}
-		}
-		//mapMatrix.createMap();
+		}	
+		mapMatrix.createInitialMap();
 		
 	}
 
@@ -107,9 +111,9 @@ async function main() {
 class InputHandler{
 	constructor(){
 		this.keys = { up: false,
-					  right: false,
-					  left: false
-		  			};
+			  right: false,
+			  left: false
+  			};
 		
 		window.addEventListener('keydown', (event) => {
 			if (event.key == "w")
@@ -148,26 +152,34 @@ class Camera {
 
 class MatrixMap {
 
-  constructor(mapX, mapY) {   			 	// Size of the map ( x and y )	 
-	this.mapX = mapX;
-	this.mapY = mapY;
-	this.map = this.createMap();
+ constructor(mapWidth, mapHeight) {   			 	// Size of the map ( x and y )	 
+	this.mapWidth = mapWidth;
+	this.mapHeight = mapHeight;
+	this.sky = 0;
+	this.tile = 1;
+	this.platform = 2;
+	this.matrix;
   }
-
-  getMatrixMap() {return this.map;}			// Accessor Method to return matrix ( pass a handle to the Mario Class )
-    
-  createMap() {								// Private Method used to create the matrix
+  
+  getMatrixMap() {return this.matrix;}					// Accessor Method to return matrix ( pass a handle to the Mario Class )
+  getMatrixTile() {return this.tile;}					 
+  getMatrixPlatform() {return this.platform;}				// Accessor Method to return platform tile number
+  
+  // Use mouse listener to create map
+  createInitialMap() {								// Private Method used to create the matrix
 	
-	const C = 16; 
-	const R = 15;
-	const val = 0;
-	
-	var arr = Array(C);
+	this.matrix = Array(this.mapWidth);
 
-	for (var i = 0; i < C; i++)
-		arr[i] = Array(R).fill(val);
-
-	return arr;
+	for (let i = 0; i < (this.mapWidth - 2); i++)
+		this.matrix[i] = Array(this.mapHeight).fill(this.sky);
+		
+	for (let i = this.mapWidth - 2; i < this.mapWidth; i++)
+		this.matrix[i] = Array(this.mapHeight).fill(this.tile);
+		
+	//this.matrix[11][0] = 2;
+	//this.matrix[12][0] = 2;
+	//console.log(this.matrix);
+	return this.matrix;
   }
 
   updateMatrixUp(objectMove) {			// Dont make the change super fast ( it has to sleep ) has to coincide with the anuimation
@@ -198,22 +210,23 @@ class MatrixMap {
 }
 
 class Player {
-	constructor(gameWidth, gameHeight, spriteSheet, spriteMap) {	
+	constructor(gameWidth, gameHeight, spriteSheet, spriteMap, mapMatrix) {	
 		this.gameWidth = gameWidth;
 		this.gameHeight = gameHeight; 
 		this.spriteSheet = spriteSheet;   // all the spritesheets in the game
 		this.spriteMap = spriteMap;		  // the object to know sprites positions in the spritesheet
 		//this.sprite = this.spriteMap.MarioRight;
+		this.mapMatrix = mapMatrix;
 		this.sprite = "Mario";
 		this.width = 26; // pixels	
 		this.height = 32; // pixels
 		this.x = 0;					     			// The Mario character will have a width of 1 block and a height of 2 blocks in the matrix representation
-		this.y = this.gameHeight - this.height; // bottom of game area
+		this.y = this.gameHeight - this.height - 64; 				// Four blocks in the sky
 		this.direction = "R";   // Mario's Direction
 		this.speed = 0;
 		this.jumpSpeed = 0;
 		this.weight = 1;
-		 
+		this.blockSize = 16; 
 	}
 
 	/* Accesors */
@@ -258,14 +271,20 @@ class Player {
 		if (input.keys["up"] == true && this.onGround() ) this.jumpSpeed -= 10; // negative to move up
 
 		/* update horizontal: both player and background */
-		this.x += this.speed; 
+		if (this.collisionHorizontal() == false)
+			this.x += this.speed; 
+		//else
+		//	this.x -= this.speed;
 
 		/* check horizontal bounds */
 		if (this.x < 0) this.x = 0;
 		else if (this.x > this.gameWidth - this.width ) this.x = this.gameWidth - this.width;
 		
 		/* update vertical */
-		this.y += this.jumpSpeed;
+		if (this.collisionVertical() == false)
+			this.y += this.jumpSpeed;
+		//else
+		//	this.y -= this.jumpSpeed;
 
 		/* apply weight when mario is not on the ground & change to jumping sprite */
 		if ( !this.onGround() ){
@@ -279,10 +298,21 @@ class Player {
 
 		if (this.y > this.gameHeight - this.height) this.y = this.gameHeight - this.height;
 	}
+	
+	collisionHorizontal() {
+		// Check if horizontal movement is colliding
+		return (this.mapMatrix.getMatrixMap()[Math.round(((this.y + this.height) / this.blockSize))][Math.round((this.x) / this.blockSize)] == this.mapMatrix.getMatrixTile())
+	}
+	
+	collisionVertical() {
+		// Check if horizontal movement is colliding
+		return (this.mapMatrix.getMatrixMap()[Math.round(((this.y + this.height) / this.blockSize))][Math.round((this.x) / this.blockSize)] == this.mapMatrix.getMatrixPlatform())
+	}
 
 	// we can modify this method later to check for solid structures
 	onGround(){
-		return this.y >= this.gameHeight - this.height;
+		//console.log( this.mapMatrix.getMatrixMap()[Math.round(((this.y + this.height) / this.blockSize))][Math.round((this.x) / this.blockSize)] == this.mapMatrix.getMatrixTile() )
+		return (this.mapMatrix.getMatrixMap()[Math.round(((this.y + this.height + this.blockSize) / this.blockSize))][Math.round((this.x) / this.blockSize)] == this.mapMatrix.getMatrixTile())
 	}
 	
 	//Draws Mario in its current position on the screen
