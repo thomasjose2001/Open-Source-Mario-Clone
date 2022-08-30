@@ -21,6 +21,7 @@ async function main() {
 	let camera = new Camera(256, 240, player);
 	let staggerFrames = 8; // For animation purposes, helps make animations slower by doing them every n number of frames
 	let gameFrame = 0; // frame counter
+	mapMatrix.createInitialMap();
 	//---- Game Loop ----
 	let gameRun = function () {
 		context.clearRect( 0, 0, canvas.width, canvas.height);
@@ -56,7 +57,6 @@ async function main() {
 				}
 			}
 		}	
-		mapMatrix.createInitialMap();
 		
 	}
 
@@ -189,7 +189,7 @@ class MatrixMap {
 		
 	//this.matrix[11][0] = 2;
 	//this.matrix[12][0] = 2;
-	//console.log(this.matrix);
+	console.log(this.matrix);
 	return this.matrix;
   }
 
