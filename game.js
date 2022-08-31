@@ -5,10 +5,11 @@
 /* Function Oriented Programming */
 async function main() {
 	let input = new InputHandler();  						
-	let canvas = document.getElementById("canvas");			
-	canvas.width = 256*10; 
+	let canvas = document.getElementById("canvas");	
+	/* We need to define a way to make the dimensions to scale up to make the screen size bigger */		
+	canvas.width = 3376; 
 	canvas.height= 240; 
-	const mapWidth = 256;		
+	const mapWidth = 3376;		
 	const mapHeight = 240;
 	const blockSize = 16;
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
@@ -169,7 +170,7 @@ class MatrixMap {
 	this.sky = 0;
 	this.tile = 1;
 	this.platform = 2;
-	this.matrix;
+	this.matrix = [];
   }
   
   getMatrixMap() {return this.matrix;}					// Accessor Method to return matrix ( pass a handle to the Mario Class )
@@ -178,14 +179,11 @@ class MatrixMap {
   
   // Use mouse listener to create map
   createInitialMap() {								// Private Method used to create the matrix
-	
-	this.matrix = Array(this.mapWidth);
-
-	for (let i = 0; i < (this.mapWidth - 2); i++)
-		this.matrix[i] = Array(this.mapHeight).fill(this.sky);
+	for (let i = 0; i < (this.mapHeight - 2); i++)
+		this.matrix[i] = Array(this.mapWidth).fill(this.sky);
 		
-	for (let i = this.mapWidth - 2; i < this.mapWidth; i++)
-		this.matrix[i] = Array(this.mapHeight).fill(this.tile);
+	for (let i = (this.mapHeight - 2); i < this.mapHeight; i++)
+		this.matrix[i] = Array(this.mapWidth).fill(this.tile);
 		
 	//this.matrix[11][0] = 2;
 	//this.matrix[12][0] = 2;
@@ -328,7 +326,7 @@ class Player {
 	// we can modify this method later to check for solid structures
 	onGround(){
 		//console.log( this.mapMatrix.getMatrixMap()[Math.round(((this.y + this.height) / this.blockSize))][Math.round((this.x) / this.blockSize)] == this.mapMatrix.getMatrixTile() )
-		return (this.mapMatrix.getMatrixMap()[Math.round(((this.y + this.height + this.blockSize) / this.blockSize))][Math.round((this.x) / this.blockSize)] == this.mapMatrix.getMatrixTile())
+		return (this.mapMatrix.getMatrixMap()[Math.round(((this.y + this.height + this.blockSize) / this.blockSize))][Math.round((this.x) / this.blockSize)] == this.mapMatrix.getMatrixTile());
 	}
 	
 	//Draws Mario in its current position on the screen
