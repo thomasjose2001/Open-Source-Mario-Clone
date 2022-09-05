@@ -4,13 +4,13 @@
 /* --------------------------------------------------------- */
 /* Function Oriented Programming */
 async function main() {
-	let input = new InputHandler();  						
 	let canvas = document.getElementById("canvas");	
 	/* We need to define a way to make the dimensions to scale up to make the screen size bigger */		
 	canvas.width = 3376; 
 	canvas.height= 240; 
+	console.log( "hello" );
 	const mapWidth = 3376;		
-	const mapHeight = 240;
+	const mapHeight = 256;
 	const blockSize = 16;
 	let context = canvas.getContext("2d");					// 2d context used for several useful methods
 	context.fillStyle = 'rgba(0, 0, 0, 0)'; // could be run at the beginning?
@@ -18,11 +18,12 @@ async function main() {
 	const GlobalSpriteMap = {};
 	await setData(GlobalSpriteMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
 	let mapMatrix = new MatrixMap(mapWidth / blockSize, mapHeight / blockSize);			// Create map matirx object
+	mapMatrix.createInitialMap();
 	let player = new Player(canvas.width, canvas.height, spriteSheet, getSpriteMap("Mario", GlobalSpriteMap), mapMatrix);
 	let camera = new Camera(256, 240, player);
+	let input = new InputHandler(canvas, mapMatrix, player, camera);  						
 	let staggerFrames = 8; // For animation purposes, helps make animations slower by doing them every n number of frames
 	let gameFrame = 0; // frame counter
-	mapMatrix.createInitialMap();
 	//---- Game Loop ----
 	let gameRun = function () {
 		context.clearRect( 0, 0, canvas.width, canvas.height);
@@ -121,11 +122,13 @@ async function main() {
 
 // Handles all input events
 class InputHandler{
-	constructor(){
-		this.keys = { up: false,
-			  right: false,
-			  left: false
-  			};
+	
+	constructor(canvas, matrixMap, mario, camera){
+	
+		this.keys = {   up: false,
+			     right: false,
+			      left: false
+  			    };
 		
 		window.addEventListener('keydown', (event) => {
 			if (event.key == "w")
@@ -144,6 +147,8 @@ class InputHandler{
 			if (event.key == "d")
 				this.keys["right"] = false;
 		});
+		
+		canvas.addEventListener("click", function(event){matrixMap.setCollision(Math.round(event.clientX), Math.round(event.clientY), Math.round(camera.getScrollLeft()))});
 	}
 }
 
@@ -155,10 +160,13 @@ class Camera {
 		this.focus = focus;
 		this.speed = 0;
 	}
+	
+	getScrollLeft() {return this.cam.scrollLeft;}
 	// negative: move left, positive: move right
 	scroll() { 
 		//console.log("Camera position: "+this.cam.scrollLeft);
 		this.cam.scrollLeft = this.focus.x - 115; // 256/2 - mario's width/2
+
 	}
 }
 
@@ -171,6 +179,7 @@ class MatrixMap {
 	this.tile = 1;
 	this.platform = 2;
 	this.matrix = [];
+	this.blockSize = 16;
   }
   
   getMatrixMap() {return this.matrix;}					// Accessor Method to return matrix ( pass a handle to the Mario Class )
@@ -185,37 +194,21 @@ class MatrixMap {
 	for (let i = (this.mapHeight - 2); i < this.mapHeight; i++)
 		this.matrix[i] = Array(this.mapWidth).fill(this.tile);
 		
-	//this.matrix[11][0] = 2;
-	//this.matrix[12][0] = 2;
+	//this.matrix[11][2] = 2;
+	//this.matrix[12][2] = 2;
 	console.log(this.matrix);
 	return this.matrix;
   }
-
-  updateMatrixUp(objectMove) {			// Dont make the change super fast ( it has to sleep ) has to coincide with the anuimation
-	// For loop the amount of columns and erase the last or bottom row
-	// for loop the amount of columns and add at row 0 + 1 more in the y direction
-	// Sleep
-	// Another row etc...
-	return 0;
-  }
-
-  updateMatrixLeft(objectMove) {
-	/*
-	mapMatrix[objectMove.getxPos][objectMove.getyPos] = 0;
-	mapMatrix[objectMove.getxPos][objectMove.getyPos + objectMove.getWidth] = 0;
-	mapMatrix[objectMove.getxPos - objectMove.getWidth][objectMove.getyPos] = objectMove.getMatrixValue;
-	mapMatrix[objectMove.getxPos - objectMove.getWidth][objectMove.getyPos - objectMove.getWidth] = objectMove.getMatrixValue;
-	*/
-  }
-
-  updateMatrixRight(objectMove) {
-	/*
-	mapMatrix[objectMove.getxPos][objectMove.getyPos] = 0;
-	mapMatrix[objectMove.getxPos][ objectMove.getyPos + objectMove.getWidth] = 0;
-	mapMatrix[objectMove.getxPos + objectMove.getWidth][objectMove.getyPos] = objectMove.getMatrixValue;
-	mapMatrix[objectMove.getxPos + objectMove.getWidth][objectMove.getyPos + objectMove.getHeight] = objectMove.getMatrixValue;
-	*/
-}	
+  
+  // Set collision on matrix 
+  setCollision(corX, corY, cameraMovement) {
+  
+  	let x = Math.round( ( corX ) / 16 );
+  	let y = Math.round( corY / 16 );
+  	
+  	this.matrix[ y ][ x - 1 ] = 2;
+  	console.log( this.matrix );	
+  }	
 }
 
 class Player {
@@ -240,8 +233,8 @@ class Player {
 	}
 
 	/* Accesors */
-	getxPos() {return this.xPos;}
-	getyPos() {return this.yPos;}
+	getxPos() {return this.x;}
+	getyPos() {return this.y;}
 	getWidth() {return this.width;}
 	getHeight() {return this.height;}
 	getMatrixValue() {return 1;}
@@ -252,10 +245,10 @@ class Player {
 	
 	/* Mutators */
 	setxPos( num ) {
-		this.xPos = num;
+		this.x = num;
 	}
 	setyPos( num ) {
-		this.yPos = num;
+		this.y = num;
 	}
 	setFallingVel( num ) { 
 		this.fallingVelocity = num;
@@ -285,8 +278,10 @@ class Player {
 		if (input.keys["up"] == true && this.onGround() ) this.jumpSpeed -= 15; // negative to move up
 
 		/* update horizontal: both player and background */
-		if (this.collisionHorizontal() == false)
+		if (this.collisionHorizontal() == false) {
 			this.x += this.speed; 
+			//console.log( "x: " + this.x );
+		}
 		//else
 		//	this.x -= this.speed;
 
