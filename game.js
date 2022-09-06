@@ -3,12 +3,14 @@
 
 /* --------------------------------------------------------- */
 /* Function Oriented Programming */
+gameBuilder = false;
+//gameBuilder = true;
 async function main() {
+	
 	let canvas = document.getElementById("canvas");	
 	/* We need to define a way to make the dimensions to scale up to make the screen size bigger */		
 	canvas.width = 3376; 
 	canvas.height= 240; 
-	console.log( "hello" );
 	const mapWidth = 3376;		
 	const mapHeight = 256;
 	const blockSize = 16;
@@ -18,7 +20,6 @@ async function main() {
 	const GlobalSpriteMap = {};
 	await setData(GlobalSpriteMap); // had to make main asynchronous ( allows for the await keywoard to wait for js promises in asynchronous functions )
 	let mapMatrix = new MatrixMap(mapWidth / blockSize, mapHeight / blockSize);			// Create map matirx object
-	mapMatrix.createInitialMap();
 	let player = new Player(canvas.width, canvas.height, spriteSheet, getSpriteMap("Mario", GlobalSpriteMap), mapMatrix);
 	let camera = new Camera(256, 240, player);
 	let input = new InputHandler(canvas, mapMatrix, player, camera);  						
@@ -35,7 +36,7 @@ async function main() {
 		requestAnimationFrame(gameRun);	
 	} 
 
-	function render() {
+	/*function render() {
 		// Paint the background in blue
 		//context.fillStyle = "rgb(4, 156, 216)";
 		//context.fillRect(0, 0, canvas.width - 1, canvas.height - 1);
@@ -60,7 +61,7 @@ async function main() {
 			}
 		}	
 		
-	}
+	} */
 
 	async function setData( spriteMap ) {
 		try{
@@ -89,9 +90,9 @@ async function main() {
 	// gathers the spriteMap of a specific character by left and right (for constant time animation access)
 	function getSpriteMap( characterName, GlobalSpriteMap){
 		characterSpriteMap = { R:{}, // Right
-							   L:{}, // Left
-							   N:{}  // No direction
-		}; 
+				       L:{}, // Left
+				       N:{}  // No direction
+		                     }; 
 
 		entriesList = Object.entries( GlobalSpriteMap );
 		for(let i = 0; i < entriesList.length; i++ ){
@@ -123,13 +124,13 @@ async function main() {
 // Handles all input events
 class InputHandler{
 	
-	constructor(canvas, matrixMap, mario, camera){
-	
+	constructor(canvas, matrixMap, mario, camera) {
+			
 		this.keys = {   up: false,
 			     right: false,
 			      left: false
   			    };
-		
+  					    
 		window.addEventListener('keydown', (event) => {
 			if (event.key == "w")
 				this.keys["up"] = true;
@@ -137,6 +138,8 @@ class InputHandler{
 				this.keys["left"] = true;
 			if (event.key == "d")
 				this.keys["right"] = true;
+			if (gameBuilder == true && event.key == "shift" && event.key == "b")
+				matrixMap.saveLocalStorage();		
 		});
 
 		window.addEventListener('keyup', (event) => {
@@ -148,7 +151,8 @@ class InputHandler{
 				this.keys["right"] = false;
 		});
 		
-		canvas.addEventListener("click", function(event){matrixMap.setCollision(Math.round(event.clientX), Math.round(event.clientY), Math.round(camera.getScrollLeft()))});
+		canvas.addEventListener("click", function(event){ if (gameMode == true) 
+			matrixMap.setCollision(Math.round(event.clientX), Math.round(event.clientY), Math.round(camera.getScrollLeft()))});
 	}
 }
 
@@ -166,28 +170,35 @@ class Camera {
 	scroll() { 
 		//console.log("Camera position: "+this.cam.scrollLeft);
 		this.cam.scrollLeft = this.focus.x - 115; // 256/2 - mario's width/2
-
 	}
 }
 
 class MatrixMap {
 
- constructor(mapWidth, mapHeight) {   			 	// Size of the map ( x and y )	 
+ constructor(mapWidth, mapHeight) {   			 				// Size of the map ( x and y )	 
+	
 	this.mapWidth = mapWidth;
 	this.mapHeight = mapHeight;
 	this.sky = 0;
 	this.tile = 1;
 	this.platform = 2;
-	this.matrix = [];
+	
+	if (localStorage.getItem("matrixMap") == null ) {
+		this.matrix = [];
+		this.createInitialMap();
+	}
+	else 
+		this.matrix = JSON.parse(localStorage.getItem("matrixMap"));		// Convert retrieved data into an array object	
 	this.blockSize = 16;
   }
   
-  getMatrixMap() {return this.matrix;}					// Accessor Method to return matrix ( pass a handle to the Mario Class )
+  getMatrixMap() {return this.matrix;}							// Accessor Method to return matrix ( pass a handle to the Mario Class )
   getMatrixTile() {return this.tile;}					 
-  getMatrixPlatform() {return this.platform;}				// Accessor Method to return platform tile number
+  getMatrixPlatform() {return this.platform;}
   
   // Use mouse listener to create map
-  createInitialMap() {								// Private Method used to create the matrix
+  createInitialMap() {									// Private Method used to create the matrix
+	
 	for (let i = 0; i < (this.mapHeight - 2); i++)
 		this.matrix[i] = Array(this.mapWidth).fill(this.sky);
 		
@@ -197,18 +208,23 @@ class MatrixMap {
 	//this.matrix[11][2] = 2;
 	//this.matrix[12][2] = 2;
 	console.log(this.matrix);
-	return this.matrix;
   }
   
   // Set collision on matrix 
   setCollision(corX, corY, cameraMovement) {
   
-  	let x = Math.round( ( corX ) / 16 );
-  	let y = Math.round( corY / 16 );
+    	let x = Math.round(corY / this.blockSize);
+  	let y = Math.round((corX) / this.blockSize);
+
+  	this.matrix[x][y - 1] = 1;
+  	console.log(this.matrix);
+  }
+  
+  saveLocalStorage() {
   	
-  	this.matrix[ y ][ x - 1 ] = 2;
-  	console.log( this.matrix );	
-  }	
+  	// Store in local storage an array with key "matrixMap" in a string / JSON format
+  	localStorage.setItem("matrixMap", JSON.stringify(this.matrix));	
+  }
 }
 
 class Player {
@@ -282,8 +298,8 @@ class Player {
 			this.x += this.speed; 
 			//console.log( "x: " + this.x );
 		}
-		//else
-		//	this.x -= this.speed;
+		else
+			this.x -= (this.speed + this.blockSize);
 
 		/* check horizontal bounds */
 		if (this.x < 0) this.x = 0;
@@ -292,8 +308,8 @@ class Player {
 		/* update vertical */
 		if (this.collisionVertical() == false)
 			this.y += this.jumpSpeed;
-		//else
-		//	this.y -= this.jumpSpeed;
+		else
+			this.y -= (this.jumpSpeed + 0.2);
 
 		/* apply weight when mario is not on the ground & change to jumping sprite */
 		if ( !this.onGround() ){
